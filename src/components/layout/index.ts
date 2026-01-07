@@ -1,4 +1,5 @@
 export { Logo } from "./Logo";
 export { Navigation } from "./Navigation";
 export { Footer } from "./Footer";
+export { UserMenu } from "./UserMenu";
 

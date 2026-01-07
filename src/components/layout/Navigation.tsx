@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
+import { UserMenu } from "./UserMenu";
 
-/** Main navigation bar with logo and auth links */
+/** Main navigation bar with logo and auth-aware menu */
 export function Navigation() {
   return (
     <nav className="relative z-10 flex items-center justify-between px-6 py-4 md:px-12 lg:px-20">
@@ -12,20 +13,7 @@ export function Navigation() {
         </span>
       </Link>
 
-      <div className="flex items-center gap-4">
-        <Link
-          href="/lobby"
-          className="btn-secondary px-5 py-2 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
-        >
-          Browse Games
-        </Link>
-        <Link
-          href="/login"
-          className="btn-primary px-5 py-2 rounded-lg text-white font-medium"
-        >
-          Sign In
-        </Link>
-      </div>
+      <UserMenu />
     </nav>
   );
 }
