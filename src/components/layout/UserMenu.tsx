@@ -35,10 +35,10 @@ export function UserMenu() {
     return (
       <div className="flex items-center gap-4">
         <Link
-          href="/lobby"
+          href="/game-finder"
           className="btn-secondary px-5 py-2 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
         >
-          Lobby
+          Find Games
         </Link>
         <div className="relative group">
           <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent-primary)] transition-colors">
@@ -81,10 +81,10 @@ export function UserMenu() {
   return (
     <div className="flex items-center gap-4">
       <Link
-        href="/lobby"
+        href="/game-finder"
         className="btn-secondary px-5 py-2 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
       >
-        Browse Games
+        Find Games
       </Link>
       <Link
         href="/login"

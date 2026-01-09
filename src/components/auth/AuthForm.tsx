@@ -60,7 +60,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         return;
       }
 
-      router.push("/lobby");
+      router.push("/game-finder");
       router.refresh();
     } else {
       const { error } = await supabase.auth.signUp({
@@ -201,7 +201,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       </div>
 
       <Link
-        href="/lobby"
+        href="/game-finder"
         className="block w-full btn-secondary py-3 rounded-lg text-center text-[var(--foreground)] font-medium"
       >
         Continue as Guest

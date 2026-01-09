@@ -24,7 +24,7 @@ export function Hero() {
       </p>
 
       <div className="mt-12 flex flex-col sm:flex-row gap-4">
-        <Button href="/lobby" className="min-w-[200px]">
+        <Button href="/game-finder" className="min-w-[200px]">
           <BoltIcon className="w-5 h-5" />
           Play Now
         </Button>
