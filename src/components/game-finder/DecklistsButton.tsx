@@ -12,7 +12,7 @@ export function DecklistsButton() {
       className="w-full btn-secondary py-3 rounded-xl text-[var(--foreground)] font-medium flex items-center justify-center gap-2"
     >
       <DeckIcon className="w-5 h-5" />
-      My Decklists
+      My Decks
     </Link>
   );
 }
