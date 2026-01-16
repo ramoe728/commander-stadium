@@ -7,6 +7,12 @@ import { DeckBuilderToolbar } from "./DeckBuilderToolbar";
 import { CardStackView } from "./CardStackView";
 import { CardTextView } from "./CardTextView";
 import { CardSearch } from "./CardSearch";
+import { ArtSelectorModal } from "./ArtSelectorModal";
+
+interface ArtSelectorState {
+  cardId: string;
+  cardName: string;
+}
 
 interface DeckBuilderProps {
   deckId: string | null;
@@ -29,6 +35,7 @@ export function DeckBuilder({
   const [categoryMode, setCategoryMode] = useState<CategoryMode>("mana-value");
   const [sortMode, setSortMode] = useState<SortMode>("mana-value");
   const [searchQuery, setSearchQuery] = useState("");
+  const [artSelector, setArtSelector] = useState<ArtSelectorState | null>(null);
 
   const cardCount = cards.reduce((sum, card) => sum + card.quantity, 0);
   const isComplete = cardCount >= 100;
@@ -57,6 +64,24 @@ export function DeckBuilder({
    */
   function handleRemoveCard(cardId: string) {
     setCards((prevCards) => prevCards.filter((c) => c.id !== cardId));
+  }
+
+  /**
+   * Opens the art selector modal for a card.
+   */
+  function handleChangeArt(cardId: string, cardName: string) {
+    setArtSelector({ cardId, cardName });
+  }
+
+  /**
+   * Updates the art for a card.
+   */
+  function handleArtSelected(cardId: string, newImageUrl: string) {
+    setCards((prevCards) =>
+      prevCards.map((c) =>
+        c.id === cardId ? { ...c, imageUrl: newImageUrl } : c
+      )
+    );
   }
 
   return (
@@ -126,6 +151,7 @@ export function DeckBuilder({
           sortMode={sortMode}
           searchQuery={searchQuery}
           onCardRemove={handleRemoveCard}
+          onChangeArt={handleChangeArt}
         />
       ) : (
         <CardTextView
@@ -134,6 +160,17 @@ export function DeckBuilder({
           sortMode={sortMode}
           searchQuery={searchQuery}
           onCardRemove={handleRemoveCard}
+          onChangeArt={handleChangeArt}
+        />
+      )}
+
+      {/* Art selector modal */}
+      {artSelector && (
+        <ArtSelectorModal
+          cardId={artSelector.cardId}
+          cardName={artSelector.cardName}
+          onSelect={handleArtSelected}
+          onClose={() => setArtSelector(null)}
         />
       )}
     </div>

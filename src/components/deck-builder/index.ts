@@ -4,6 +4,7 @@ export { CardStackView } from "./CardStackView";
 export { CardTextView } from "./CardTextView";
 export { CardSearch } from "./CardSearch";
 export { CardContextMenu } from "./CardContextMenu";
+export { ArtSelectorModal } from "./ArtSelectorModal";
 export type {
   Card,
   CardType,

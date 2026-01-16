@@ -17,6 +17,7 @@ interface CardStackViewProps {
   sortMode: SortMode;
   searchQuery: string;
   onCardRemove?: (cardId: string) => void;
+  onChangeArt?: (cardId: string, cardName: string) => void;
 }
 
 /**
@@ -30,6 +31,7 @@ export function CardStackView({
   sortMode,
   searchQuery,
   onCardRemove,
+  onChangeArt,
 }: CardStackViewProps) {
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
@@ -64,6 +66,10 @@ export function CardStackView({
     onCardRemove?.(cardId);
   }
 
+  function handleChangeArt(cardId: string, cardName: string) {
+    onChangeArt?.(cardId, cardName);
+  }
+
   if (filteredCards.length === 0) {
     return (
       <div className="text-center py-12 text-[var(--foreground-muted)]">
@@ -83,6 +89,7 @@ export function CardStackView({
             cards={groupCards}
             cardCount={groupCards.reduce((sum, c) => sum + c.quantity, 0)}
             onContextMenu={handleContextMenu}
+            onArtClick={handleChangeArt}
           />
         ))}
       </div>
@@ -95,6 +102,7 @@ export function CardStackView({
           cardId={contextMenu.cardId}
           cardName={contextMenu.cardName}
           onDelete={handleDelete}
+          onChangeArt={handleChangeArt}
           onClose={() => setContextMenu(null)}
         />
       )}
@@ -108,9 +116,10 @@ interface CardStackColumnProps {
   cards: Card[];
   cardCount: number;
   onContextMenu: (e: React.MouseEvent, card: Card) => void;
+  onArtClick: (cardId: string, cardName: string) => void;
 }
 
-function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMenu }: CardStackColumnProps) {
+function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMenu, onArtClick }: CardStackColumnProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   // Calculate the height of the stack container
@@ -148,6 +157,7 @@ function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMe
             onHover={() => setHoveredIndex(index)}
             onLeave={() => setHoveredIndex(null)}
             onContextMenu={(e) => onContextMenu(e, card)}
+            onArtClick={() => onArtClick(card.id, card.name)}
           />
         ))}
       </div>
@@ -164,6 +174,7 @@ interface CardStackItemProps {
   onHover: () => void;
   onLeave: () => void;
   onContextMenu: (e: React.MouseEvent) => void;
+  onArtClick: () => void;
 }
 
 function CardStackItem({
@@ -174,6 +185,7 @@ function CardStackItem({
   onHover,
   onLeave,
   onContextMenu,
+  onArtClick,
 }: CardStackItemProps) {
   // Calculate the vertical offset for this card
   // Cards stack with ~28px visible per card, but when a card above is hovered,
@@ -216,6 +228,20 @@ function CardStackItem({
             ×{card.quantity}
           </div>
         )}
+
+        {/* Art selector button (shown on hover) */}
+        {isHovered && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onArtClick();
+            }}
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 p-1.5 bg-black/70 hover:bg-black/90 rounded-lg border border-white/20 transition-all hover:scale-110"
+            title="Change art"
+          >
+            <ArtIcon className="w-4 h-4 text-white" />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -241,5 +267,23 @@ function ColumnHeader({ groupKey, categoryMode }: { groupKey: string; categoryMo
     <h3 className="font-[family-name:var(--font-cinzel)] text-sm font-semibold text-[var(--foreground)]">
       {groupKey}
     </h3>
+  );
+}
+
+function ArtIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+      />
+    </svg>
   );
 }

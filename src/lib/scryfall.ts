@@ -116,3 +116,65 @@ export function parseCardType(typeLine: string): string {
 
   return "Artifact"; // Default fallback
 }
+
+/**
+ * Represents a card print/art variant from Scryfall.
+ */
+export interface CardPrint {
+  id: string;
+  name: string;
+  set: string;
+  set_name: string;
+  collector_number: string;
+  imageUrl: string;
+  artist: string;
+}
+
+/**
+ * Fetches all available prints/arts for a card by name.
+ * Returns an array of print variants the user can choose from.
+ */
+export async function fetchCardPrints(cardName: string): Promise<CardPrint[]> {
+  try {
+    // Use unique:prints to get all printings of this exact card name
+    const response = await fetch(
+      `${SCRYFALL_API_BASE}/cards/search?q=!"${encodeURIComponent(cardName)}"+unique:prints&order=released`
+    );
+
+    if (!response.ok) {
+      console.error("Scryfall prints fetch error:", response.status);
+      return [];
+    }
+
+    const data = await response.json();
+    const cards: ScryfallCard[] = data.data || [];
+
+    return cards
+      .filter((card) => {
+        // Only include cards that have images
+        return card.image_uris || (card.card_faces && card.card_faces[0]?.image_uris);
+      })
+      .map((card) => ({
+        id: card.id,
+        name: card.name,
+        set: (card as ScryfallCardWithSet).set?.toUpperCase() || "???",
+        set_name: (card as ScryfallCardWithSet).set_name || "Unknown Set",
+        collector_number: (card as ScryfallCardWithSet).collector_number || "",
+        imageUrl: getCardImageUrl(card, "normal"),
+        artist: (card as ScryfallCardWithSet).artist || "Unknown",
+      }));
+  } catch (error) {
+    console.error("Failed to fetch card prints:", error);
+    return [];
+  }
+}
+
+/**
+ * Extended Scryfall card type with set info for prints.
+ */
+interface ScryfallCardWithSet extends ScryfallCard {
+  set?: string;
+  set_name?: string;
+  collector_number?: string;
+  artist?: string;
+}

@@ -17,6 +17,7 @@ interface CardTextViewProps {
   sortMode: SortMode;
   searchQuery: string;
   onCardRemove?: (cardId: string) => void;
+  onChangeArt?: (cardId: string, cardName: string) => void;
 }
 
 /**
@@ -29,6 +30,7 @@ export function CardTextView({
   sortMode,
   searchQuery,
   onCardRemove,
+  onChangeArt,
 }: CardTextViewProps) {
   const [previewCard, setPreviewCard] = useState<Card | null>(
     cards.length > 0 ? cards[0] : null
@@ -63,6 +65,10 @@ export function CardTextView({
 
   function handleDelete(cardId: string) {
     onCardRemove?.(cardId);
+  }
+
+  function handleChangeArt(cardId: string, cardName: string) {
+    onChangeArt?.(cardId, cardName);
   }
 
   if (filteredCards.length === 0) {
@@ -121,6 +127,7 @@ export function CardTextView({
           cardId={contextMenu.cardId}
           cardName={contextMenu.cardName}
           onDelete={handleDelete}
+          onChangeArt={handleChangeArt}
           onClose={() => setContextMenu(null)}
         />
       )}
