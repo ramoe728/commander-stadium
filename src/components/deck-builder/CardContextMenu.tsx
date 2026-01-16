@@ -74,8 +74,8 @@ export function CardContextMenu({
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 min-w-[160px] bg-[var(--background-secondary)] border border-[var(--border)] rounded-lg shadow-xl overflow-hidden"
-      style={{ left: x, top: y }}
+      className="fixed min-w-[160px] bg-[var(--background-secondary)] border border-[var(--border)] rounded-lg shadow-xl overflow-hidden"
+      style={{ left: x, top: y, zIndex: 1000 }}
     >
       {/* Card name header */}
       <div className="px-3 py-2 border-b border-[var(--border)] bg-[var(--surface)]">
