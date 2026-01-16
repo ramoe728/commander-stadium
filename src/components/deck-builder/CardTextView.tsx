@@ -2,12 +2,21 @@
 
 import { useState } from "react";
 import { Card, CategoryMode, SortMode, groupCards, sortCards, filterCards } from "./types";
+import { CardContextMenu } from "./CardContextMenu";
+
+interface ContextMenuState {
+  x: number;
+  y: number;
+  cardId: string;
+  cardName: string;
+}
 
 interface CardTextViewProps {
   cards: Card[];
   categoryMode: CategoryMode;
   sortMode: SortMode;
   searchQuery: string;
+  onCardRemove?: (cardId: string) => void;
 }
 
 /**
@@ -19,10 +28,12 @@ export function CardTextView({
   categoryMode,
   sortMode,
   searchQuery,
+  onCardRemove,
 }: CardTextViewProps) {
   const [previewCard, setPreviewCard] = useState<Card | null>(
     cards.length > 0 ? cards[0] : null
   );
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
   const filteredCards = filterCards(cards, searchQuery);
   const groupedCards = groupCards(filteredCards, categoryMode);
@@ -40,6 +51,20 @@ export function CardTextView({
       return a.key.localeCompare(b.key);
     });
 
+  function handleContextMenu(e: React.MouseEvent, card: Card) {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      cardId: card.id,
+      cardName: card.name,
+    });
+  }
+
+  function handleDelete(cardId: string) {
+    onCardRemove?.(cardId);
+  }
+
   if (filteredCards.length === 0) {
     return (
       <div className="text-center py-12 text-[var(--foreground-muted)]">
@@ -49,42 +74,57 @@ export function CardTextView({
   }
 
   return (
-    <div className="flex gap-6">
-      {/* Card preview panel (sticky) */}
-      <div className="hidden lg:block w-64 flex-shrink-0">
-        <div className="sticky top-24">
-          {previewCard ? (
-            <div className="rounded-xl overflow-hidden border border-[var(--border)] shadow-xl">
-              <img
-                src={previewCard.imageUrl}
-                alt={previewCard.name}
-                className="w-full h-auto"
-              />
-            </div>
-          ) : (
-            <div className="aspect-[488/680] bg-[var(--surface)] rounded-xl border border-[var(--border)] flex items-center justify-center">
-              <span className="text-[var(--foreground-muted)] text-sm">
-                Hover over a card
-              </span>
-            </div>
-          )}
+    <>
+      <div className="flex gap-6">
+        {/* Card preview panel (sticky) */}
+        <div className="hidden lg:block w-64 flex-shrink-0">
+          <div className="sticky top-24">
+            {previewCard ? (
+              <div className="rounded-xl overflow-hidden border border-[var(--border)] shadow-xl">
+                <img
+                  src={previewCard.imageUrl}
+                  alt={previewCard.name}
+                  className="w-full h-auto"
+                />
+              </div>
+            ) : (
+              <div className="aspect-[488/680] bg-[var(--surface)] rounded-xl border border-[var(--border)] flex items-center justify-center">
+                <span className="text-[var(--foreground-muted)] text-sm">
+                  Hover over a card
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Text list columns */}
+        <div className="flex-grow grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+          {sortedGroups.map(({ key, cards: groupCards }) => (
+            <CardTextColumn
+              key={key}
+              groupKey={key}
+              categoryMode={categoryMode}
+              cards={groupCards}
+              cardCount={groupCards.reduce((sum, c) => sum + c.quantity, 0)}
+              onCardHover={setPreviewCard}
+              onContextMenu={handleContextMenu}
+            />
+          ))}
         </div>
       </div>
 
-      {/* Text list columns */}
-      <div className="flex-grow grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-        {sortedGroups.map(({ key, cards: groupCards }) => (
-          <CardTextColumn
-            key={key}
-            groupKey={key}
-            categoryMode={categoryMode}
-            cards={groupCards}
-            cardCount={groupCards.reduce((sum, c) => sum + c.quantity, 0)}
-            onCardHover={setPreviewCard}
-          />
-        ))}
-      </div>
-    </div>
+      {/* Context menu */}
+      {contextMenu && (
+        <CardContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          cardId={contextMenu.cardId}
+          cardName={contextMenu.cardName}
+          onDelete={handleDelete}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
+    </>
   );
 }
 
@@ -94,9 +134,10 @@ interface CardTextColumnProps {
   cards: Card[];
   cardCount: number;
   onCardHover: (card: Card) => void;
+  onContextMenu: (e: React.MouseEvent, card: Card) => void;
 }
 
-function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover }: CardTextColumnProps) {
+function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover, onContextMenu }: CardTextColumnProps) {
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
       {/* Column header */}
@@ -110,7 +151,12 @@ function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover 
       {/* Card list */}
       <div className="divide-y divide-[var(--border)]">
         {cards.map((card) => (
-          <CardTextItem key={card.id} card={card} onHover={() => onCardHover(card)} />
+          <CardTextItem 
+            key={card.id} 
+            card={card} 
+            onHover={() => onCardHover(card)} 
+            onContextMenu={(e) => onContextMenu(e, card)}
+          />
         ))}
       </div>
     </div>
@@ -120,13 +166,15 @@ function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover 
 interface CardTextItemProps {
   card: Card;
   onHover: () => void;
+  onContextMenu: (e: React.MouseEvent) => void;
 }
 
-function CardTextItem({ card, onHover }: CardTextItemProps) {
+function CardTextItem({ card, onHover, onContextMenu }: CardTextItemProps) {
   return (
     <div
       className="flex items-center gap-3 px-4 py-2 hover:bg-[var(--surface-hover)] cursor-pointer transition-colors"
       onMouseEnter={onHover}
+      onContextMenu={onContextMenu}
     >
       {/* Quantity */}
       <span className="text-sm text-[var(--foreground-muted)] w-4 text-right">

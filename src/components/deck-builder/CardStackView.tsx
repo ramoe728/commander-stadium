@@ -2,12 +2,21 @@
 
 import { useState } from "react";
 import { Card, CategoryMode, SortMode, groupCards, sortCards, filterCards } from "./types";
+import { CardContextMenu } from "./CardContextMenu";
+
+interface ContextMenuState {
+  x: number;
+  y: number;
+  cardId: string;
+  cardName: string;
+}
 
 interface CardStackViewProps {
   cards: Card[];
   categoryMode: CategoryMode;
   sortMode: SortMode;
   searchQuery: string;
+  onCardRemove?: (cardId: string) => void;
 }
 
 /**
@@ -20,7 +29,10 @@ export function CardStackView({
   categoryMode,
   sortMode,
   searchQuery,
+  onCardRemove,
 }: CardStackViewProps) {
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+
   const filteredCards = filterCards(cards, searchQuery);
   const groupedCards = groupCards(filteredCards, categoryMode);
 
@@ -38,6 +50,20 @@ export function CardStackView({
       return a.key.localeCompare(b.key);
     });
 
+  function handleContextMenu(e: React.MouseEvent, card: Card) {
+    e.preventDefault();
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      cardId: card.id,
+      cardName: card.name,
+    });
+  }
+
+  function handleDelete(cardId: string) {
+    onCardRemove?.(cardId);
+  }
+
   if (filteredCards.length === 0) {
     return (
       <div className="text-center py-12 text-[var(--foreground-muted)]">
@@ -47,17 +73,32 @@ export function CardStackView({
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
-      {sortedGroups.map(({ key, cards: groupCards }) => (
-        <CardStackColumn
-          key={key}
-          groupKey={key}
-          categoryMode={categoryMode}
-          cards={groupCards}
-          cardCount={groupCards.reduce((sum, c) => sum + c.quantity, 0)}
+    <>
+      <div className="flex gap-4 overflow-x-auto pb-4">
+        {sortedGroups.map(({ key, cards: groupCards }) => (
+          <CardStackColumn
+            key={key}
+            groupKey={key}
+            categoryMode={categoryMode}
+            cards={groupCards}
+            cardCount={groupCards.reduce((sum, c) => sum + c.quantity, 0)}
+            onContextMenu={handleContextMenu}
+          />
+        ))}
+      </div>
+
+      {/* Context menu */}
+      {contextMenu && (
+        <CardContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          cardId={contextMenu.cardId}
+          cardName={contextMenu.cardName}
+          onDelete={handleDelete}
+          onClose={() => setContextMenu(null)}
         />
-      ))}
-    </div>
+      )}
+    </>
   );
 }
 
@@ -66,9 +107,10 @@ interface CardStackColumnProps {
   categoryMode: CategoryMode;
   cards: Card[];
   cardCount: number;
+  onContextMenu: (e: React.MouseEvent, card: Card) => void;
 }
 
-function CardStackColumn({ groupKey, categoryMode, cards, cardCount }: CardStackColumnProps) {
+function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMenu }: CardStackColumnProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   // Calculate the height of the stack container
@@ -105,6 +147,7 @@ function CardStackColumn({ groupKey, categoryMode, cards, cardCount }: CardStack
             totalCards={cards.length}
             onHover={() => setHoveredIndex(index)}
             onLeave={() => setHoveredIndex(null)}
+            onContextMenu={(e) => onContextMenu(e, card)}
           />
         ))}
       </div>
@@ -120,6 +163,7 @@ interface CardStackItemProps {
   totalCards: number;
   onHover: () => void;
   onLeave: () => void;
+  onContextMenu: (e: React.MouseEvent) => void;
 }
 
 function CardStackItem({
@@ -129,6 +173,7 @@ function CardStackItem({
   hoveredIndex,
   onHover,
   onLeave,
+  onContextMenu,
 }: CardStackItemProps) {
   // Calculate the vertical offset for this card
   // Cards stack with ~28px visible per card, but when a card above is hovered,
@@ -149,6 +194,7 @@ function CardStackItem({
       style={{ top: `${topOffset}px`, zIndex: isHovered ? 100 : index }}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
+      onContextMenu={onContextMenu}
     >
       <div
         className={`relative rounded-lg overflow-hidden border-2 transition-all duration-200 ${

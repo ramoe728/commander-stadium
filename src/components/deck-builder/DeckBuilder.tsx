@@ -52,6 +52,13 @@ export function DeckBuilder({
     });
   }
 
+  /**
+   * Removes a card from the deck entirely.
+   */
+  function handleRemoveCard(cardId: string) {
+    setCards((prevCards) => prevCards.filter((c) => c.id !== cardId));
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -118,6 +125,7 @@ export function DeckBuilder({
           categoryMode={categoryMode}
           sortMode={sortMode}
           searchQuery={searchQuery}
+          onCardRemove={handleRemoveCard}
         />
       ) : (
         <CardTextView
@@ -125,6 +133,7 @@ export function DeckBuilder({
           categoryMode={categoryMode}
           sortMode={sortMode}
           searchQuery={searchQuery}
+          onCardRemove={handleRemoveCard}
         />
       )}
     </div>
