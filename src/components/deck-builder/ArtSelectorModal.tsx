@@ -22,7 +22,6 @@ export function ArtSelectorModal({
 }: ArtSelectorModalProps) {
   const [prints, setPrints] = useState<CardPrint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPrint, setSelectedPrint] = useState<CardPrint | null>(null);
 
   // Fetch all prints when modal opens
   useEffect(() => {
@@ -46,11 +45,12 @@ export function ArtSelectorModal({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [onClose]);
 
-  function handleSelect() {
-    if (selectedPrint) {
-      onSelect(cardId, selectedPrint.imageUrl);
-      onClose();
-    }
+  /**
+   * Applies the selected art and closes the modal.
+   */
+  function handleArtClick(print: CardPrint) {
+    onSelect(cardId, print.imageUrl);
+    onClose();
   }
 
   return (
@@ -99,12 +99,8 @@ export function ArtSelectorModal({
               {prints.map((print) => (
                 <button
                   key={print.id}
-                  onClick={() => setSelectedPrint(print)}
-                  className={`group relative rounded-xl overflow-hidden border-2 transition-all ${
-                    selectedPrint?.id === print.id
-                      ? "border-[var(--accent-primary)] shadow-lg shadow-[var(--accent-primary)]/20 scale-105"
-                      : "border-transparent hover:border-[var(--border)]"
-                  }`}
+                  onClick={() => handleArtClick(print)}
+                  className="group relative rounded-xl overflow-hidden border-2 border-transparent hover:border-[var(--accent-primary)] hover:shadow-lg hover:shadow-[var(--accent-primary)]/20 hover:scale-105 transition-all cursor-pointer"
                 >
                   <img
                     src={print.imageUrl}
@@ -122,39 +118,12 @@ export function ArtSelectorModal({
                       {print.artist} • #{print.collector_number}
                     </div>
                   </div>
-
-                  {/* Selected checkmark */}
-                  {selectedPrint?.id === print.id && (
-                    <div className="absolute top-2 right-2 w-6 h-6 bg-[var(--accent-primary)] rounded-full flex items-center justify-center">
-                      <CheckIcon className="w-4 h-4 text-white" />
-                    </div>
-                  )}
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--border)] bg-[var(--surface)]">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--background-secondary)] transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSelect}
-            disabled={!selectedPrint}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedPrint
-                ? "btn-primary text-white"
-                : "bg-[var(--surface)] text-[var(--foreground-subtle)] cursor-not-allowed"
-            }`}
-          >
-            Apply Art
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -164,14 +133,6 @@ function CloseIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  );
-}
-
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
     </svg>
   );
 }

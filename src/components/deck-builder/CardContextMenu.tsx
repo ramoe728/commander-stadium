@@ -95,14 +95,14 @@ export function CardContextMenu({
       <div className="py-1">
         <button
           onClick={handleChangeArt}
-          className="w-full px-3 py-2 text-left text-sm text-[var(--foreground)] hover:bg-[var(--surface)] flex items-center gap-2 transition-colors"
+          className="w-full px-3 py-2 text-left text-sm text-[var(--foreground)] hover:bg-[var(--accent-primary)]/20 hover:text-[var(--accent-primary)] flex items-center gap-2 transition-colors cursor-pointer"
         >
           <ArtIcon className="w-4 h-4" />
           Change Art
         </button>
         <button
           onClick={handleDelete}
-          className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2 transition-colors"
+          className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-red-500/20 hover:text-red-300 flex items-center gap-2 transition-colors cursor-pointer"
         >
           <TrashIcon className="w-4 h-4" />
           Delete
