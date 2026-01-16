@@ -14,6 +14,7 @@ export interface ScryfallCard {
   mana_cost: string;
   cmc: number; // Converted mana cost (mana value)
   type_line: string;
+  oracle_text?: string; // Rules text - used to detect "any number of cards" abilities
   image_uris?: {
     small: string;
     normal: string;
@@ -24,6 +25,7 @@ export interface ScryfallCard {
     name: string;
     mana_cost: string;
     type_line: string;
+    oracle_text?: string;
     image_uris?: {
       small: string;
       normal: string;
@@ -97,6 +99,31 @@ export function getCardImageUrl(card: ScryfallCard, size: "small" | "normal" | "
 
   // Fallback placeholder
   return "/assets/card-back.png";
+}
+
+/**
+ * Determines if a card allows multiple copies in a Commander deck.
+ * Returns true for:
+ * - Basic lands (type_line contains "Basic Land")
+ * - Cards with "A deck can have any number of cards named" in oracle_text
+ *   (e.g., Relentless Rats, Shadowborn Apostle, Dragon's Approach, etc.)
+ */
+export function allowsMultipleCopies(card: ScryfallCard): boolean {
+  // Check if it's a basic land
+  if (card.type_line?.toLowerCase().includes("basic land")) {
+    return true;
+  }
+
+  // Get oracle text (handle double-faced cards)
+  const oracleText = card.oracle_text || 
+    card.card_faces?.map(face => face.oracle_text || "").join(" ") || "";
+
+  // Check for "A deck can have any number of cards named" ability
+  if (oracleText.toLowerCase().includes("a deck can have any number of cards named")) {
+    return true;
+  }
+
+  return false;
 }
 
 /**

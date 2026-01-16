@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CategoryMode, SortMode, groupCards, sortCards, filterCards } from "./types";
+import { Card, CategoryMode, SortMode, groupCards, sortCards, filterCards, isCardIllegal } from "./types";
 import { CardContextMenu } from "./CardContextMenu";
 
 interface ContextMenuState {
@@ -9,6 +9,7 @@ interface ContextMenuState {
   y: number;
   cardId: string;
   cardName: string;
+  quantity: number;
 }
 
 interface CardStackViewProps {
@@ -16,6 +17,8 @@ interface CardStackViewProps {
   categoryMode: CategoryMode;
   sortMode: SortMode;
   searchQuery: string;
+  onCardIncrement?: (cardId: string) => void;
+  onCardDecrement?: (cardId: string) => void;
   onCardRemove?: (cardId: string) => void;
   onChangeArt?: (cardId: string, cardName: string) => void;
 }
@@ -30,6 +33,8 @@ export function CardStackView({
   categoryMode,
   sortMode,
   searchQuery,
+  onCardIncrement,
+  onCardDecrement,
   onCardRemove,
   onChangeArt,
 }: CardStackViewProps) {
@@ -59,7 +64,16 @@ export function CardStackView({
       y: e.clientY,
       cardId: card.id,
       cardName: card.name,
+      quantity: card.quantity,
     });
+  }
+
+  function handleIncrement(cardId: string) {
+    onCardIncrement?.(cardId);
+  }
+
+  function handleDecrement(cardId: string) {
+    onCardDecrement?.(cardId);
   }
 
   function handleDelete(cardId: string) {
@@ -101,6 +115,9 @@ export function CardStackView({
           y={contextMenu.y}
           cardId={contextMenu.cardId}
           cardName={contextMenu.cardName}
+          quantity={contextMenu.quantity}
+          onIncrement={handleIncrement}
+          onDecrement={handleDecrement}
           onDelete={handleDelete}
           onChangeArt={handleChangeArt}
           onClose={() => setContextMenu(null)}
@@ -154,6 +171,7 @@ function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMe
             isHovered={hoveredIndex === index}
             hoveredIndex={hoveredIndex}
             totalCards={cards.length}
+            isIllegal={isCardIllegal(card)}
             onHover={() => setHoveredIndex(index)}
             onLeave={() => setHoveredIndex(null)}
             onContextMenu={(e) => onContextMenu(e, card)}
@@ -171,6 +189,7 @@ interface CardStackItemProps {
   isHovered: boolean;
   hoveredIndex: number | null;
   totalCards: number;
+  isIllegal: boolean;
   onHover: () => void;
   onLeave: () => void;
   onContextMenu: (e: React.MouseEvent) => void;
@@ -182,6 +201,7 @@ function CardStackItem({
   index,
   isHovered,
   hoveredIndex,
+  isIllegal,
   onHover,
   onLeave,
   onContextMenu,
@@ -211,8 +231,12 @@ function CardStackItem({
       <div
         className={`relative rounded-lg overflow-hidden border-2 transition-all duration-200 ${
           isHovered
-            ? "border-[var(--accent-primary)] shadow-lg shadow-[var(--accent-primary)]/20 scale-105"
-            : "border-transparent"
+            ? isIllegal
+              ? "border-red-500 shadow-lg shadow-red-500/30 scale-105"
+              : "border-[var(--accent-primary)] shadow-lg shadow-[var(--accent-primary)]/20 scale-105"
+            : isIllegal
+              ? "border-red-500/70"
+              : "border-transparent"
         }`}
       >
         <img

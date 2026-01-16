@@ -15,6 +15,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Commander",
     tags: ["Commander"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
 
   // Creatures
@@ -27,6 +28,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Creature",
     tags: ["Proliferate", "Finisher"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "evolution-sage",
@@ -37,6 +39,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Creature",
     tags: ["Proliferate"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "vorinclex-monstrous",
@@ -47,6 +50,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Creature",
     tags: ["Finisher"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "flux-channeler",
@@ -57,6 +61,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Creature",
     tags: ["Proliferate"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "ichor-rats",
@@ -67,6 +72,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Creature",
     tags: ["Infect"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "bloom-hulk",
@@ -77,6 +83,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Creature",
     tags: ["Proliferate"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "birds-of-paradise",
@@ -87,6 +94,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Creature",
     tags: ["Ramp"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
 
   // Planeswalkers
@@ -99,6 +107,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Planeswalker",
     tags: ["Card Draw"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "liliana-dreadhorde",
@@ -109,6 +118,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Planeswalker",
     tags: ["Card Draw", "Removal"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "elspeth-suns-champion",
@@ -119,6 +129,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Planeswalker",
     tags: ["Token", "Removal"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "tamiyo-field",
@@ -129,6 +140,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Planeswalker",
     tags: ["Card Draw"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
 
   // Instants
@@ -141,6 +153,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Instant",
     tags: ["Removal"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "path-to-exile",
@@ -151,6 +164,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Instant",
     tags: ["Removal"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "counterspell",
@@ -161,6 +175,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Instant",
     tags: ["Counter"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "heroic-intervention",
@@ -171,6 +186,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Instant",
     tags: ["Protection"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "teferi-protection",
@@ -181,6 +197,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Instant",
     tags: ["Protection"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
 
   // Sorceries
@@ -193,6 +210,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Sorcery",
     tags: ["Ramp"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "cultivate",
@@ -203,6 +221,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Sorcery",
     tags: ["Ramp"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "supreme-verdict",
@@ -213,6 +232,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Sorcery",
     tags: ["Removal"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
 
   // Artifacts
@@ -225,6 +245,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Artifact",
     tags: ["Ramp"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "arcane-signet",
@@ -235,6 +256,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Artifact",
     tags: ["Ramp"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "contagion-engine",
@@ -245,6 +267,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Artifact",
     tags: ["Proliferate", "Removal"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "everflowing-chalice",
@@ -255,6 +278,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Artifact",
     tags: ["Ramp"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
 
   // Enchantments
@@ -267,6 +291,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Enchantment",
     tags: ["Finisher"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "inexorable-tide",
@@ -277,6 +302,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Enchantment",
     tags: ["Proliferate"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "rhystic-study",
@@ -287,6 +313,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Enchantment",
     tags: ["Card Draw"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "smothering-tithe",
@@ -297,9 +324,10 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Enchantment",
     tags: ["Ramp"],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
 
-  // Lands
+  // Lands (non-basic)
   {
     id: "command-tower",
     name: "Command Tower",
@@ -309,6 +337,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Land",
     tags: [],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "breeding-pool",
@@ -319,6 +348,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Land",
     tags: [],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "watery-grave",
@@ -329,6 +359,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Land",
     tags: [],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "godless-shrine",
@@ -339,6 +370,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Land",
     tags: [],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "temple-garden",
@@ -349,6 +381,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Land",
     tags: [],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "hallowed-fountain",
@@ -359,6 +392,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Land",
     tags: [],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
   {
     id: "overgrown-tomb",
@@ -369,7 +403,9 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Land",
     tags: [],
     quantity: 1,
+    allowsMultipleCopies: false,
   },
+  // Basic Lands (allow multiple copies)
   {
     id: "island-1",
     name: "Island",
@@ -379,6 +415,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Land",
     tags: [],
     quantity: 5,
+    allowsMultipleCopies: true,
   },
   {
     id: "plains-1",
@@ -389,6 +426,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Land",
     tags: [],
     quantity: 4,
+    allowsMultipleCopies: true,
   },
   {
     id: "swamp-1",
@@ -399,6 +437,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Land",
     tags: [],
     quantity: 4,
+    allowsMultipleCopies: true,
   },
   {
     id: "forest-1",
@@ -409,6 +448,7 @@ export const MOCK_DECK_CARDS: Card[] = [
     type: "Land",
     tags: [],
     quantity: 5,
+    allowsMultipleCopies: true,
   },
 ];
 

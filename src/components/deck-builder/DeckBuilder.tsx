@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Card, ViewMode, CategoryMode, SortMode } from "./types";
+import { Card, ViewMode, CategoryMode, SortMode, validateDeckLegality } from "./types";
 import { DeckBuilderToolbar } from "./DeckBuilderToolbar";
 import { CardStackView } from "./CardStackView";
 import { CardTextView } from "./CardTextView";
@@ -39,6 +39,7 @@ export function DeckBuilder({
 
   const cardCount = cards.reduce((sum, card) => sum + card.quantity, 0);
   const isComplete = cardCount >= 100;
+  const deckLegality = validateDeckLegality(cards);
 
   /**
    * Adds a card to the deck. If the card already exists, increments quantity.
@@ -60,7 +61,37 @@ export function DeckBuilder({
   }
 
   /**
-   * Removes a card from the deck entirely.
+   * Increments the quantity of a card.
+   */
+  function handleIncrementCard(cardId: string) {
+    setCards((prevCards) =>
+      prevCards.map((c) =>
+        c.id === cardId ? { ...c, quantity: c.quantity + 1 } : c
+      )
+    );
+  }
+
+  /**
+   * Decrements the quantity of a card.
+   * If quantity reaches 0, removes the card entirely.
+   */
+  function handleDecrementCard(cardId: string) {
+    setCards((prevCards) =>
+      prevCards.flatMap((c) => {
+        if (c.id === cardId) {
+          if (c.quantity > 1) {
+            return { ...c, quantity: c.quantity - 1 };
+          }
+          // Remove card if quantity would go to 0
+          return [];
+        }
+        return c;
+      })
+    );
+  }
+
+  /**
+   * Removes a card from the deck entirely (all copies).
    */
   function handleRemoveCard(cardId: string) {
     setCards((prevCards) => prevCards.filter((c) => c.id !== cardId));
@@ -113,6 +144,18 @@ export function DeckBuilder({
               >
                 {cardCount}/100 cards
               </span>
+              {/* Deck legality indicator */}
+              {deckLegality.isLegal ? (
+                <span className="text-sm text-green-400 flex items-center gap-1">
+                  <CheckIcon className="w-4 h-4" />
+                  Legal
+                </span>
+              ) : (
+                <span className="text-sm text-red-400 flex items-center gap-1" title={deckLegality.illegalCards.map(c => `${c.cardName}: ${c.reason}`).join('\n')}>
+                  <WarningIcon className="w-4 h-4" />
+                  {deckLegality.illegalCards.length} violation{deckLegality.illegalCards.length !== 1 ? 's' : ''}
+                </span>
+              )}
               {deckId && (
                 <span className="text-sm text-[var(--foreground-subtle)]">
                   ID: {deckId}
@@ -150,6 +193,8 @@ export function DeckBuilder({
           categoryMode={categoryMode}
           sortMode={sortMode}
           searchQuery={searchQuery}
+          onCardIncrement={handleIncrementCard}
+          onCardDecrement={handleDecrementCard}
           onCardRemove={handleRemoveCard}
           onChangeArt={handleChangeArt}
         />
@@ -159,6 +204,8 @@ export function DeckBuilder({
           categoryMode={categoryMode}
           sortMode={sortMode}
           searchQuery={searchQuery}
+          onCardIncrement={handleIncrementCard}
+          onCardDecrement={handleDecrementCard}
           onCardRemove={handleRemoveCard}
           onChangeArt={handleChangeArt}
         />
@@ -197,6 +244,22 @@ function AddCardIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+function WarningIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
     </svg>
   );
 }

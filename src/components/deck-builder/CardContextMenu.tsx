@@ -7,6 +7,9 @@ interface CardContextMenuProps {
   y: number;
   cardId: string;
   cardName: string;
+  quantity: number;
+  onIncrement: (cardId: string) => void;
+  onDecrement: (cardId: string) => void;
   onDelete: (cardId: string) => void;
   onChangeArt: (cardId: string, cardName: string) => void;
   onClose: () => void;
@@ -21,6 +24,9 @@ export function CardContextMenu({
   y,
   cardId,
   cardName,
+  quantity,
+  onIncrement,
+  onDecrement,
   onDelete,
   onChangeArt,
   onClose,
@@ -68,6 +74,16 @@ export function CardContextMenu({
     }
   }, [x, y]);
 
+  function handleIncrement() {
+    onIncrement(cardId);
+    onClose();
+  }
+
+  function handleDecrement() {
+    onDecrement(cardId);
+    onClose();
+  }
+
   function handleDelete() {
     onDelete(cardId);
     onClose();
@@ -81,7 +97,7 @@ export function CardContextMenu({
   return (
     <div
       ref={menuRef}
-      className="fixed min-w-[160px] bg-[var(--background-secondary)] border border-[var(--border)] rounded-lg shadow-xl overflow-hidden"
+      className="fixed min-w-[180px] bg-[var(--background-secondary)] border border-[var(--border)] rounded-lg shadow-xl overflow-hidden"
       style={{ left: x, top: y, zIndex: 1000 }}
     >
       {/* Card name header */}
@@ -89,9 +105,35 @@ export function CardContextMenu({
         <span className="text-xs text-[var(--foreground-muted)] truncate block max-w-[200px]">
           {cardName}
         </span>
+        <span className="text-xs text-[var(--foreground-subtle)]">
+          Qty: {quantity}
+        </span>
       </div>
 
-      {/* Menu items */}
+      {/* Quantity controls */}
+      <div className="py-1 border-b border-[var(--border)]">
+        <button
+          onClick={handleIncrement}
+          className="w-full px-3 py-2 text-left text-sm text-[var(--foreground)] hover:bg-[var(--accent-primary)]/20 hover:text-[var(--accent-primary)] flex items-center gap-2 transition-colors cursor-pointer"
+        >
+          <PlusIcon className="w-4 h-4" />
+          Add Copy
+        </button>
+        <button
+          onClick={handleDecrement}
+          disabled={quantity <= 1}
+          className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors cursor-pointer ${
+            quantity <= 1
+              ? "text-[var(--foreground-subtle)] cursor-not-allowed"
+              : "text-[var(--foreground)] hover:bg-[var(--accent-primary)]/20 hover:text-[var(--accent-primary)]"
+          }`}
+        >
+          <MinusIcon className="w-4 h-4" />
+          Remove Copy
+        </button>
+      </div>
+
+      {/* Other actions */}
       <div className="py-1">
         <button
           onClick={handleChangeArt}
@@ -105,7 +147,7 @@ export function CardContextMenu({
           className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-red-500/20 hover:text-red-300 flex items-center gap-2 transition-colors cursor-pointer"
         >
           <TrashIcon className="w-4 h-4" />
-          Delete
+          Delete All
         </button>
       </div>
     </div>
@@ -143,6 +185,42 @@ function TrashIcon({ className }: { className?: string }) {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+      />
+    </svg>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 4.5v15m7.5-7.5h-15"
+      />
+    </svg>
+  );
+}
+
+function MinusIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M19.5 12h-15"
       />
     </svg>
   );

@@ -11,6 +11,7 @@ export interface Card {
   type: CardType;
   tags: string[]; // User-defined tags like "card draw", "finisher"
   quantity: number;
+  allowsMultipleCopies: boolean; // True for basic lands and cards like Relentless Rats
 }
 
 export type CardType =
@@ -101,4 +102,60 @@ export function filterCards(cards: Card[], query: string): Card[] {
   if (!query.trim()) return cards;
   const lowerQuery = query.toLowerCase();
   return cards.filter((card) => card.name.toLowerCase().includes(lowerQuery));
+}
+
+/**
+ * Represents a card that violates Commander singleton rules.
+ */
+export interface IllegalCard {
+  cardId: string;
+  cardName: string;
+  quantity: number;
+  reason: string;
+}
+
+/**
+ * Result of deck legality validation.
+ */
+export interface DeckLegalityResult {
+  isLegal: boolean;
+  illegalCards: IllegalCard[];
+}
+
+/**
+ * Validates deck legality for Commander format.
+ * Checks for singleton rule violations (only 1 copy unless it's a basic land
+ * or a card that explicitly allows multiple copies).
+ */
+export function validateDeckLegality(cards: Card[]): DeckLegalityResult {
+  const illegalCards: IllegalCard[] = [];
+
+  cards.forEach((card) => {
+    // Cards allowing multiple copies are always legal regardless of quantity
+    if (card.allowsMultipleCopies) {
+      return;
+    }
+
+    // Singleton rule: only 1 copy allowed
+    if (card.quantity > 1) {
+      illegalCards.push({
+        cardId: card.id,
+        cardName: card.name,
+        quantity: card.quantity,
+        reason: `Only 1 copy allowed (has ${card.quantity})`,
+      });
+    }
+  });
+
+  return {
+    isLegal: illegalCards.length === 0,
+    illegalCards,
+  };
+}
+
+/**
+ * Checks if a specific card is violating the singleton rule.
+ */
+export function isCardIllegal(card: Card): boolean {
+  return !card.allowsMultipleCopies && card.quantity > 1;
 }

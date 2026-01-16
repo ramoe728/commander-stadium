@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CategoryMode, SortMode, groupCards, sortCards, filterCards } from "./types";
+import { Card, CategoryMode, SortMode, groupCards, sortCards, filterCards, isCardIllegal } from "./types";
 import { CardContextMenu } from "./CardContextMenu";
 
 interface ContextMenuState {
@@ -9,6 +9,7 @@ interface ContextMenuState {
   y: number;
   cardId: string;
   cardName: string;
+  quantity: number;
 }
 
 interface CardTextViewProps {
@@ -16,6 +17,8 @@ interface CardTextViewProps {
   categoryMode: CategoryMode;
   sortMode: SortMode;
   searchQuery: string;
+  onCardIncrement?: (cardId: string) => void;
+  onCardDecrement?: (cardId: string) => void;
   onCardRemove?: (cardId: string) => void;
   onChangeArt?: (cardId: string, cardName: string) => void;
 }
@@ -29,6 +32,8 @@ export function CardTextView({
   categoryMode,
   sortMode,
   searchQuery,
+  onCardIncrement,
+  onCardDecrement,
   onCardRemove,
   onChangeArt,
 }: CardTextViewProps) {
@@ -60,7 +65,16 @@ export function CardTextView({
       y: e.clientY,
       cardId: card.id,
       cardName: card.name,
+      quantity: card.quantity,
     });
+  }
+
+  function handleIncrement(cardId: string) {
+    onCardIncrement?.(cardId);
+  }
+
+  function handleDecrement(cardId: string) {
+    onCardDecrement?.(cardId);
   }
 
   function handleDelete(cardId: string) {
@@ -126,6 +140,9 @@ export function CardTextView({
           y={contextMenu.y}
           cardId={contextMenu.cardId}
           cardName={contextMenu.cardName}
+          quantity={contextMenu.quantity}
+          onIncrement={handleIncrement}
+          onDecrement={handleDecrement}
           onDelete={handleDelete}
           onChangeArt={handleChangeArt}
           onClose={() => setContextMenu(null)}
@@ -160,7 +177,8 @@ function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover,
         {cards.map((card) => (
           <CardTextItem 
             key={card.id} 
-            card={card} 
+            card={card}
+            isIllegal={isCardIllegal(card)}
             onHover={() => onCardHover(card)} 
             onContextMenu={(e) => onContextMenu(e, card)}
           />
@@ -172,24 +190,29 @@ function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover,
 
 interface CardTextItemProps {
   card: Card;
+  isIllegal: boolean;
   onHover: () => void;
   onContextMenu: (e: React.MouseEvent) => void;
 }
 
-function CardTextItem({ card, onHover, onContextMenu }: CardTextItemProps) {
+function CardTextItem({ card, isIllegal, onHover, onContextMenu }: CardTextItemProps) {
   return (
     <div
-      className="flex items-center gap-3 px-4 py-2 hover:bg-[var(--surface-hover)] cursor-pointer transition-colors"
+      className={`flex items-center gap-3 px-4 py-2 cursor-pointer transition-colors ${
+        isIllegal
+          ? "bg-red-500/10 hover:bg-red-500/20 border-l-2 border-red-500"
+          : "hover:bg-[var(--surface-hover)]"
+      }`}
       onMouseEnter={onHover}
       onContextMenu={onContextMenu}
     >
       {/* Quantity */}
-      <span className="text-sm text-[var(--foreground-muted)] w-4 text-right">
+      <span className={`text-sm w-4 text-right ${isIllegal ? "text-red-400 font-bold" : "text-[var(--foreground-muted)]"}`}>
         {card.quantity}
       </span>
 
       {/* Card name */}
-      <span className="flex-grow text-sm text-[var(--foreground)] truncate">
+      <span className={`flex-grow text-sm truncate ${isIllegal ? "text-red-400" : "text-[var(--foreground)]"}`}>
         {card.name}
       </span>
 

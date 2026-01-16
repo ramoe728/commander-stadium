@@ -6,6 +6,7 @@ import {
   fetchCardByName,
   getCardImageUrl,
   parseCardType,
+  allowsMultipleCopies,
   ScryfallCard,
 } from "@/lib/scryfall";
 import { Card, CardType } from "./types";
@@ -117,6 +118,7 @@ export function CardSearch({ onCardAdd }: CardSearchProps) {
         type: parseCardType(scryfallCard.type_line) as CardType,
         tags: [],
         quantity: 1,
+        allowsMultipleCopies: allowsMultipleCopies(scryfallCard),
       };
 
       onCardAdd(newCard);
