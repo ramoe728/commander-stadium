@@ -128,6 +128,8 @@ export function CardTextView({
               cardCount={groupCards.reduce((sum, c) => sum + c.quantity, 0)}
               onCardHover={setPreviewCard}
               onContextMenu={handleContextMenu}
+              onIncrement={handleIncrement}
+              onDecrement={handleDecrement}
             />
           ))}
         </div>
@@ -141,8 +143,6 @@ export function CardTextView({
           cardId={contextMenu.cardId}
           cardName={contextMenu.cardName}
           quantity={contextMenu.quantity}
-          onIncrement={handleIncrement}
-          onDecrement={handleDecrement}
           onDelete={handleDelete}
           onChangeArt={handleChangeArt}
           onClose={() => setContextMenu(null)}
@@ -159,9 +159,11 @@ interface CardTextColumnProps {
   cardCount: number;
   onCardHover: (card: Card) => void;
   onContextMenu: (e: React.MouseEvent, card: Card) => void;
+  onIncrement: (cardId: string) => void;
+  onDecrement: (cardId: string) => void;
 }
 
-function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover, onContextMenu }: CardTextColumnProps) {
+function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover, onContextMenu, onIncrement, onDecrement }: CardTextColumnProps) {
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
       {/* Column header */}
@@ -179,8 +181,11 @@ function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover,
             key={card.id} 
             card={card}
             isIllegal={isCardIllegal(card)}
+            showQuantityControls={card.allowsMultipleCopies || card.quantity > 1}
             onHover={() => onCardHover(card)} 
             onContextMenu={(e) => onContextMenu(e, card)}
+            onIncrement={() => onIncrement(card.id)}
+            onDecrement={() => onDecrement(card.id)}
           />
         ))}
       </div>
@@ -191,25 +196,65 @@ function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover,
 interface CardTextItemProps {
   card: Card;
   isIllegal: boolean;
+  showQuantityControls: boolean;
   onHover: () => void;
   onContextMenu: (e: React.MouseEvent) => void;
+  onIncrement: () => void;
+  onDecrement: () => void;
 }
 
-function CardTextItem({ card, isIllegal, onHover, onContextMenu }: CardTextItemProps) {
+function CardTextItem({ card, isIllegal, showQuantityControls, onHover, onContextMenu, onIncrement, onDecrement }: CardTextItemProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-2 cursor-pointer transition-colors ${
+      className={`flex items-center gap-2 px-3 py-1.5 cursor-pointer transition-colors ${
         isIllegal
           ? "bg-red-500/10 hover:bg-red-500/20 border-l-2 border-red-500"
           : "hover:bg-[var(--surface-hover)]"
       }`}
-      onMouseEnter={onHover}
+      onMouseEnter={() => {
+        setIsHovered(true);
+        onHover();
+      }}
+      onMouseLeave={() => setIsHovered(false)}
       onContextMenu={onContextMenu}
     >
-      {/* Quantity */}
-      <span className={`text-sm w-4 text-right ${isIllegal ? "text-red-400 font-bold" : "text-[var(--foreground-muted)]"}`}>
-        {card.quantity}
-      </span>
+      {/* Quantity with +/- controls */}
+      <div className="flex items-center gap-1">
+        {showQuantityControls && isHovered && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDecrement();
+            }}
+            disabled={card.quantity <= 1}
+            className={`w-5 h-5 flex items-center justify-center rounded text-xs transition-colors ${
+              card.quantity <= 1
+                ? "text-[var(--foreground-subtle)] cursor-not-allowed"
+                : "text-red-400 hover:bg-red-500/20 hover:text-red-300"
+            }`}
+            title="Remove copy"
+          >
+            <MinusIcon className="w-3 h-3" />
+          </button>
+        )}
+        <span className={`text-sm w-4 text-center ${isIllegal ? "text-red-400 font-bold" : "text-[var(--foreground-muted)]"}`}>
+          {card.quantity}
+        </span>
+        {showQuantityControls && isHovered && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onIncrement();
+            }}
+            className="w-5 h-5 flex items-center justify-center rounded text-xs text-green-400 hover:bg-green-500/20 hover:text-green-300 transition-colors"
+            title="Add copy"
+          >
+            <PlusIcon className="w-3 h-3" />
+          </button>
+        )}
+      </div>
 
       {/* Card name */}
       <span className={`flex-grow text-sm truncate ${isIllegal ? "text-red-400" : "text-[var(--foreground)]"}`}>
@@ -297,5 +342,21 @@ function ColumnHeader({ groupKey, categoryMode }: { groupKey: string; categoryMo
     <h3 className="font-[family-name:var(--font-cinzel)] text-sm font-semibold text-[var(--foreground)]">
       {groupKey}
     </h3>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    </svg>
+  );
+}
+
+function MinusIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+    </svg>
   );
 }

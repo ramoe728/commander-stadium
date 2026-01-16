@@ -8,8 +8,6 @@ interface CardContextMenuProps {
   cardId: string;
   cardName: string;
   quantity: number;
-  onIncrement: (cardId: string) => void;
-  onDecrement: (cardId: string) => void;
   onDelete: (cardId: string) => void;
   onChangeArt: (cardId: string, cardName: string) => void;
   onClose: () => void;
@@ -25,8 +23,6 @@ export function CardContextMenu({
   cardId,
   cardName,
   quantity,
-  onIncrement,
-  onDecrement,
   onDelete,
   onChangeArt,
   onClose,
@@ -74,16 +70,6 @@ export function CardContextMenu({
     }
   }, [x, y]);
 
-  function handleIncrement() {
-    onIncrement(cardId);
-    onClose();
-  }
-
-  function handleDecrement() {
-    onDecrement(cardId);
-    onClose();
-  }
-
   function handleDelete() {
     onDelete(cardId);
     onClose();
@@ -105,35 +91,14 @@ export function CardContextMenu({
         <span className="text-xs text-[var(--foreground-muted)] truncate block max-w-[200px]">
           {cardName}
         </span>
-        <span className="text-xs text-[var(--foreground-subtle)]">
-          Qty: {quantity}
-        </span>
+        {quantity > 1 && (
+          <span className="text-xs text-[var(--foreground-subtle)]">
+            Qty: {quantity}
+          </span>
+        )}
       </div>
 
-      {/* Quantity controls */}
-      <div className="py-1 border-b border-[var(--border)]">
-        <button
-          onClick={handleIncrement}
-          className="w-full px-3 py-2 text-left text-sm text-[var(--foreground)] hover:bg-[var(--accent-primary)]/20 hover:text-[var(--accent-primary)] flex items-center gap-2 transition-colors cursor-pointer"
-        >
-          <PlusIcon className="w-4 h-4" />
-          Add Copy
-        </button>
-        <button
-          onClick={handleDecrement}
-          disabled={quantity <= 1}
-          className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors cursor-pointer ${
-            quantity <= 1
-              ? "text-[var(--foreground-subtle)] cursor-not-allowed"
-              : "text-[var(--foreground)] hover:bg-[var(--accent-primary)]/20 hover:text-[var(--accent-primary)]"
-          }`}
-        >
-          <MinusIcon className="w-4 h-4" />
-          Remove Copy
-        </button>
-      </div>
-
-      {/* Other actions */}
+      {/* Actions */}
       <div className="py-1">
         <button
           onClick={handleChangeArt}
@@ -190,38 +155,3 @@ function TrashIcon({ className }: { className?: string }) {
   );
 }
 
-function PlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 4.5v15m7.5-7.5h-15"
-      />
-    </svg>
-  );
-}
-
-function MinusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M19.5 12h-15"
-      />
-    </svg>
-  );
-}

@@ -104,6 +104,8 @@ export function CardStackView({
             cardCount={groupCards.reduce((sum, c) => sum + c.quantity, 0)}
             onContextMenu={handleContextMenu}
             onArtClick={handleChangeArt}
+            onIncrement={handleIncrement}
+            onDecrement={handleDecrement}
           />
         ))}
       </div>
@@ -116,8 +118,6 @@ export function CardStackView({
           cardId={contextMenu.cardId}
           cardName={contextMenu.cardName}
           quantity={contextMenu.quantity}
-          onIncrement={handleIncrement}
-          onDecrement={handleDecrement}
           onDelete={handleDelete}
           onChangeArt={handleChangeArt}
           onClose={() => setContextMenu(null)}
@@ -134,9 +134,11 @@ interface CardStackColumnProps {
   cardCount: number;
   onContextMenu: (e: React.MouseEvent, card: Card) => void;
   onArtClick: (cardId: string, cardName: string) => void;
+  onIncrement: (cardId: string) => void;
+  onDecrement: (cardId: string) => void;
 }
 
-function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMenu, onArtClick }: CardStackColumnProps) {
+function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMenu, onArtClick, onIncrement, onDecrement }: CardStackColumnProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   // Calculate the height of the stack container
@@ -172,10 +174,13 @@ function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMe
             hoveredIndex={hoveredIndex}
             totalCards={cards.length}
             isIllegal={isCardIllegal(card)}
+            showQuantityControls={card.allowsMultipleCopies || card.quantity > 1}
             onHover={() => setHoveredIndex(index)}
             onLeave={() => setHoveredIndex(null)}
             onContextMenu={(e) => onContextMenu(e, card)}
             onArtClick={() => onArtClick(card.id, card.name)}
+            onIncrement={() => onIncrement(card.id)}
+            onDecrement={() => onDecrement(card.id)}
           />
         ))}
       </div>
@@ -190,10 +195,13 @@ interface CardStackItemProps {
   hoveredIndex: number | null;
   totalCards: number;
   isIllegal: boolean;
+  showQuantityControls: boolean;
   onHover: () => void;
   onLeave: () => void;
   onContextMenu: (e: React.MouseEvent) => void;
   onArtClick: () => void;
+  onIncrement: () => void;
+  onDecrement: () => void;
 }
 
 function CardStackItem({
@@ -202,10 +210,13 @@ function CardStackItem({
   isHovered,
   hoveredIndex,
   isIllegal,
+  showQuantityControls,
   onHover,
   onLeave,
   onContextMenu,
   onArtClick,
+  onIncrement,
+  onDecrement,
 }: CardStackItemProps) {
   // Calculate the vertical offset for this card
   // Cards stack with ~28px visible per card, but when a card above is hovered,
@@ -266,6 +277,37 @@ function CardStackItem({
             <ArtIcon className="w-4 h-4 text-white" />
           </button>
         )}
+
+        {/* Quantity controls (shown on hover for cards that allow multiples or have > 1) */}
+        {isHovered && showQuantityControls && (
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col gap-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onIncrement();
+              }}
+              className="w-7 h-7 flex items-center justify-center bg-black/80 hover:bg-green-600 rounded border border-white/30 transition-colors"
+              title="Add copy"
+            >
+              <PlusIcon className="w-4 h-4 text-white" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDecrement();
+              }}
+              disabled={card.quantity <= 1}
+              className={`w-7 h-7 flex items-center justify-center rounded border transition-colors ${
+                card.quantity <= 1
+                  ? "bg-black/40 border-white/10 cursor-not-allowed"
+                  : "bg-black/80 hover:bg-red-600 border-white/30"
+              }`}
+              title="Remove copy"
+            >
+              <MinusIcon className={`w-4 h-4 ${card.quantity <= 1 ? "text-white/30" : "text-white"}`} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -308,6 +350,22 @@ function ArtIcon({ className }: { className?: string }) {
         strokeLinejoin="round"
         d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
       />
+    </svg>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    </svg>
+  );
+}
+
+function MinusIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
     </svg>
   );
 }
