@@ -1,21 +1,20 @@
 "use client";
 
-interface NewDeckButtonProps {
-  onClick: () => void;
-}
+import Link from "next/link";
 
 /**
  * Button to create a new deck.
+ * Navigates to the deck builder with a blank deck.
  */
-export function NewDeckButton({ onClick }: NewDeckButtonProps) {
+export function NewDeckButton() {
   return (
-    <button
-      onClick={onClick}
+    <Link
+      href="/decks/new"
       className="btn-primary px-6 py-3 rounded-xl text-white font-medium flex items-center gap-2"
     >
       <PlusIcon className="w-5 h-5" />
       New Deck
-    </button>
+    </Link>
   );
 }
 

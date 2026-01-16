@@ -53,11 +53,6 @@ const MOCK_DECKS: Deck[] = [
 ];
 
 export default function DecksPage() {
-  const handleCreateDeck = () => {
-    console.log("Creating new deck");
-    // TODO: Open create deck modal or navigate to deck builder
-  };
-
   return (
     <div className="animated-gradient min-h-screen relative">
       {/* Background effects */}
@@ -77,7 +72,7 @@ export default function DecksPage() {
                 Manage your Commander deck collection
               </p>
             </div>
-            <NewDeckButton onClick={handleCreateDeck} />
+            <NewDeckButton />
           </div>
 
           {/* Decks grid */}
