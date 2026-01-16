@@ -6,6 +6,7 @@ import { Card, ViewMode, CategoryMode, SortMode } from "./types";
 import { DeckBuilderToolbar } from "./DeckBuilderToolbar";
 import { CardStackView } from "./CardStackView";
 import { CardTextView } from "./CardTextView";
+import { CardSearch } from "./CardSearch";
 
 interface DeckBuilderProps {
   deckId: string | null;
@@ -23,7 +24,7 @@ export function DeckBuilder({
   initialCards,
 }: DeckBuilderProps) {
   const [deckName, setDeckName] = useState(initialDeckName);
-  const [cards] = useState<Card[]>(initialCards);
+  const [cards, setCards] = useState<Card[]>(initialCards);
   const [viewMode, setViewMode] = useState<ViewMode>("stacks");
   const [categoryMode, setCategoryMode] = useState<CategoryMode>("mana-value");
   const [sortMode, setSortMode] = useState<SortMode>("mana-value");
@@ -31,6 +32,25 @@ export function DeckBuilder({
 
   const cardCount = cards.reduce((sum, card) => sum + card.quantity, 0);
   const isComplete = cardCount >= 100;
+
+  /**
+   * Adds a card to the deck. If the card already exists, increments quantity.
+   */
+  function handleAddCard(newCard: Card) {
+    setCards((prevCards) => {
+      const existingCard = prevCards.find((c) => c.id === newCard.id);
+
+      if (existingCard) {
+        // Increment quantity of existing card
+        return prevCards.map((c) =>
+          c.id === newCard.id ? { ...c, quantity: c.quantity + 1 } : c
+        );
+      }
+
+      // Add new card to the deck
+      return [...prevCards, newCard];
+    });
+  }
 
   return (
     <div className="space-y-6">
@@ -71,13 +91,10 @@ export function DeckBuilder({
         </div>
 
         <div className="flex items-center gap-3">
+          <CardSearch onCardAdd={handleAddCard} />
           <button className="btn-secondary px-4 py-2 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)]">
             <SaveIcon className="w-4 h-4 inline-block mr-2" />
             Save
-          </button>
-          <button className="btn-primary px-4 py-2 rounded-lg text-white">
-            <AddCardIcon className="w-4 h-4 inline-block mr-2" />
-            Add Cards
           </button>
         </div>
       </div>

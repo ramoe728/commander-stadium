@@ -2,6 +2,7 @@ export { DeckBuilder } from "./DeckBuilder";
 export { DeckBuilderToolbar } from "./DeckBuilderToolbar";
 export { CardStackView } from "./CardStackView";
 export { CardTextView } from "./CardTextView";
+export { CardSearch } from "./CardSearch";
 export type {
   Card,
   CardType,
