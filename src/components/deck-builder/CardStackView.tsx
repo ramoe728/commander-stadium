@@ -51,7 +51,8 @@ export function CardStackView({
       {sortedGroups.map(({ key, cards: groupCards }) => (
         <CardStackColumn
           key={key}
-          title={getCategoryTitle(key, categoryMode)}
+          groupKey={key}
+          categoryMode={categoryMode}
           cards={groupCards}
           cardCount={groupCards.reduce((sum, c) => sum + c.quantity, 0)}
         />
@@ -61,12 +62,13 @@ export function CardStackView({
 }
 
 interface CardStackColumnProps {
-  title: string;
+  groupKey: string;
+  categoryMode: CategoryMode;
   cards: Card[];
   cardCount: number;
 }
 
-function CardStackColumn({ title, cards, cardCount }: CardStackColumnProps) {
+function CardStackColumn({ groupKey, categoryMode, cards, cardCount }: CardStackColumnProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   // Calculate the height of the stack container
@@ -82,9 +84,7 @@ function CardStackColumn({ title, cards, cardCount }: CardStackColumnProps) {
     <div className="flex-shrink-0 w-48">
       {/* Column header */}
       <div className="flex items-center justify-between mb-3 px-1">
-        <h3 className="font-[family-name:var(--font-cinzel)] text-sm font-semibold text-[var(--foreground)]">
-          {title}
-        </h3>
+        <ColumnHeader groupKey={groupKey} categoryMode={categoryMode} />
         <span className="text-xs text-[var(--foreground-muted)] bg-[var(--surface)] px-2 py-0.5 rounded-full">
           {cardCount}
         </span>
@@ -175,10 +175,25 @@ function CardStackItem({
   );
 }
 
-function getCategoryTitle(key: string, categoryMode: CategoryMode): string {
+/**
+ * Renders the column header - uses mana value images when grouped by mana value.
+ */
+function ColumnHeader({ groupKey, categoryMode }: { groupKey: string; categoryMode: CategoryMode }) {
   if (categoryMode === "mana-value") {
-    if (key === "0") return "0";
-    return key;
+    // Use mana value image
+    return (
+      <img
+        src={`/assets/mana-${groupKey}.png`}
+        alt={`Mana value ${groupKey}`}
+        className="w-4 h-4 rounded-full"
+      />
+    );
   }
-  return key;
+
+  // Text title for other category modes
+  return (
+    <h3 className="font-[family-name:var(--font-cinzel)] text-sm font-semibold text-[var(--foreground)]">
+      {groupKey}
+    </h3>
+  );
 }

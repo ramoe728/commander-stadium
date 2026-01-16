@@ -76,7 +76,8 @@ export function CardTextView({
         {sortedGroups.map(({ key, cards: groupCards }) => (
           <CardTextColumn
             key={key}
-            title={getCategoryTitle(key, categoryMode)}
+            groupKey={key}
+            categoryMode={categoryMode}
             cards={groupCards}
             cardCount={groupCards.reduce((sum, c) => sum + c.quantity, 0)}
             onCardHover={setPreviewCard}
@@ -88,20 +89,19 @@ export function CardTextView({
 }
 
 interface CardTextColumnProps {
-  title: string;
+  groupKey: string;
+  categoryMode: CategoryMode;
   cards: Card[];
   cardCount: number;
   onCardHover: (card: Card) => void;
 }
 
-function CardTextColumn({ title, cards, cardCount, onCardHover }: CardTextColumnProps) {
+function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover }: CardTextColumnProps) {
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
       {/* Column header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] bg-[var(--background-secondary)]">
-        <h3 className="font-[family-name:var(--font-cinzel)] text-sm font-semibold text-[var(--foreground)]">
-          {title}
-        </h3>
+        <ColumnHeader groupKey={groupKey} categoryMode={categoryMode} />
         <span className="text-xs text-[var(--foreground-muted)] bg-[var(--surface)] px-2 py-0.5 rounded-full">
           {cardCount}
         </span>
@@ -199,9 +199,25 @@ function ManaSymbol({ symbol }: { symbol: string }) {
   );
 }
 
-function getCategoryTitle(key: string, categoryMode: CategoryMode): string {
+/**
+ * Renders the column header - uses mana value images when grouped by mana value.
+ */
+function ColumnHeader({ groupKey, categoryMode }: { groupKey: string; categoryMode: CategoryMode }) {
   if (categoryMode === "mana-value") {
-    return `Mana Value ${key}`;
+    // Use mana value image
+    return (
+      <img
+        src={`/assets/mana-${groupKey}.png`}
+        alt={`Mana value ${groupKey}`}
+        className="w-3 h-3 rounded-full"
+      />
+    );
   }
-  return key;
+
+  // Text title for other category modes
+  return (
+    <h3 className="font-[family-name:var(--font-cinzel)] text-sm font-semibold text-[var(--foreground)]">
+      {groupKey}
+    </h3>
+  );
 }
