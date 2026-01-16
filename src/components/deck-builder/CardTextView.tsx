@@ -232,7 +232,7 @@ function CardTextItem({ card, isIllegal, showQuantityControls, onHover, onContex
             className={`w-5 h-5 flex items-center justify-center rounded text-xs transition-colors ${
               card.quantity <= 1
                 ? "text-[var(--foreground-subtle)] cursor-not-allowed"
-                : "text-red-400 hover:bg-red-500/20 hover:text-red-300"
+                : "text-red-400 hover:bg-red-500/20 hover:text-red-300 cursor-pointer"
             }`}
             title="Remove copy"
           >
@@ -248,7 +248,7 @@ function CardTextItem({ card, isIllegal, showQuantityControls, onHover, onContex
               e.stopPropagation();
               onIncrement();
             }}
-            className="w-5 h-5 flex items-center justify-center rounded text-xs text-green-400 hover:bg-green-500/20 hover:text-green-300 transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded text-xs text-green-400 hover:bg-green-500/20 hover:text-green-300 transition-colors cursor-pointer"
             title="Add copy"
           >
             <PlusIcon className="w-3 h-3" />

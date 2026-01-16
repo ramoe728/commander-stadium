@@ -286,7 +286,7 @@ function CardStackItem({
                 e.stopPropagation();
                 onIncrement();
               }}
-              className="w-7 h-7 flex items-center justify-center bg-black/80 hover:bg-green-600 rounded border border-white/30 transition-colors"
+              className="w-7 h-7 flex items-center justify-center bg-black/80 hover:bg-green-600 rounded border border-white/30 transition-colors cursor-pointer"
               title="Add copy"
             >
               <PlusIcon className="w-4 h-4 text-white" />
@@ -300,7 +300,7 @@ function CardStackItem({
               className={`w-7 h-7 flex items-center justify-center rounded border transition-colors ${
                 card.quantity <= 1
                   ? "bg-black/40 border-white/10 cursor-not-allowed"
-                  : "bg-black/80 hover:bg-red-600 border-white/30"
+                  : "bg-black/80 hover:bg-red-600 border-white/30 cursor-pointer"
               }`}
               title="Remove copy"
             >
