@@ -243,14 +243,12 @@ function CardStackItem({
       onContextMenu={onContextMenu}
     >
       <div
-        className={`relative rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+        className={`relative rounded-lg overflow-hidden transition-all duration-200 ${
           isHovered
             ? isIllegal
-              ? "border-red-500 shadow-lg shadow-red-500/30 scale-105"
-              : "border-[var(--accent-primary)] shadow-lg shadow-[var(--accent-primary)]/20 scale-105"
-            : isIllegal
-              ? "border-red-500/70"
-              : "border-transparent"
+              ? "shadow-lg shadow-red-500/30 scale-105"
+              : "shadow-lg shadow-[var(--accent-primary)]/20 scale-105"
+            : ""
         }`}
       >
         <img
@@ -258,6 +256,18 @@ function CardStackItem({
           alt={card.name}
           className="w-full h-auto"
           draggable={false}
+        />
+
+        {/* Border overlay - renders on top of the image */}
+        <div
+          className="absolute inset-0 rounded-lg pointer-events-none transition-all duration-200"
+          style={{
+            boxShadow: isIllegal
+              ? `inset 0 0 0 6px rgba(239, 68, 68, ${isHovered ? 1 : 0.7})`
+              : isHovered
+                ? "inset 0 0 0 2px var(--accent-primary)"
+                : "none"
+          }}
         />
 
         {/* Quantity badge */}
