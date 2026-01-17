@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card, ViewMode, CategoryMode, SortMode, validateDeckLegality } from "./types";
 import { DeckBuilderToolbar } from "./DeckBuilderToolbar";
 import { CardStackView } from "./CardStackView";
@@ -9,6 +10,7 @@ import { CardTextView } from "./CardTextView";
 import { CardSearch } from "./CardSearch";
 import { ArtSelectorModal } from "./ArtSelectorModal";
 import { ImportDecklistModal } from "./ImportDecklistModal";
+import { createDeck, updateDeck } from "@/lib/decks";
 
 interface ArtSelectorState {
   cardId: string;
@@ -30,6 +32,8 @@ export function DeckBuilder({
   initialDeckName,
   initialCards,
 }: DeckBuilderProps) {
+  const router = useRouter();
+  const [currentDeckId, setCurrentDeckId] = useState<string | null>(deckId);
   const [deckName, setDeckName] = useState(initialDeckName);
   const [cards, setCards] = useState<Card[]>(initialCards);
   const [viewMode, setViewMode] = useState<ViewMode>("stacks");
@@ -38,6 +42,8 @@ export function DeckBuilder({
   const [searchQuery, setSearchQuery] = useState("");
   const [artSelector, setArtSelector] = useState<ArtSelectorState | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
 
   const cardCount = cards.reduce((sum, card) => sum + card.quantity, 0);
   const isComplete = cardCount >= 100;
@@ -143,6 +149,51 @@ export function DeckBuilder({
     });
   }
 
+  /**
+   * Saves the deck to Supabase.
+   * Creates a new deck if no ID exists, otherwise updates the existing deck.
+   */
+  async function handleSave() {
+    if (isSaving) return;
+
+    setIsSaving(true);
+    setSaveStatus("idle");
+
+    try {
+      const deckInput = {
+        name: deckName || "Untitled Deck",
+        cards,
+      };
+
+      let result;
+      if (currentDeckId) {
+        // Update existing deck
+        result = await updateDeck(currentDeckId, deckInput);
+      } else {
+        // Create new deck
+        result = await createDeck(deckInput);
+        if (result) {
+          // Update URL to include the new deck ID
+          setCurrentDeckId(result.id);
+          router.replace(`/decks/${result.id}`);
+        }
+      }
+
+      if (result) {
+        setSaveStatus("saved");
+        // Reset status after 3 seconds
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      } else {
+        setSaveStatus("error");
+      }
+    } catch (error) {
+      console.error("Error saving deck:", error);
+      setSaveStatus("error");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -203,9 +254,38 @@ export function DeckBuilder({
             <ImportIcon className="w-4 h-4" />
             Import
           </button>
-          <button className="btn-secondary px-4 py-2 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)] cursor-pointer">
-            <SaveIcon className="w-4 h-4 inline-block mr-2" />
-            Save
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className={`btn-secondary px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer transition-colors ${
+              saveStatus === "saved"
+                ? "text-green-400 border-green-400/50"
+                : saveStatus === "error"
+                ? "text-red-400 border-red-400/50"
+                : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {isSaving ? (
+              <>
+                <LoadingSpinner className="w-4 h-4" />
+                Saving...
+              </>
+            ) : saveStatus === "saved" ? (
+              <>
+                <CheckIcon className="w-4 h-4" />
+                Saved!
+              </>
+            ) : saveStatus === "error" ? (
+              <>
+                <WarningIcon className="w-4 h-4" />
+                Error
+              </>
+            ) : (
+              <>
+                <SaveIcon className="w-4 h-4" />
+                Save
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -312,6 +392,19 @@ function ImportIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+    </svg>
+  );
+}
+
+function LoadingSpinner({ className }: { className?: string }) {
+  return (
+    <svg className={`animate-spin ${className}`} fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
     </svg>
   );
 }
