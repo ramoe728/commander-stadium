@@ -94,7 +94,8 @@ export function CardStackView({
 
   return (
     <>
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      {/* px-4 adds padding so edge cards don't get clipped when they scale up on hover */}
+      <div className="flex gap-4 overflow-x-auto pb-4 px-4 -mx-4">
         {sortedGroups.map(({ key, cards: groupCards }) => (
           <CardStackColumn
             key={key}
