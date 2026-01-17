@@ -41,7 +41,7 @@ export function UserMenu() {
           Find Games
         </Link>
         <div className="relative group">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent-primary)] transition-colors">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent-primary)] transition-colors cursor-pointer">
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-xs text-white font-bold">
               {user.email?.[0].toUpperCase()}
             </div>
@@ -50,27 +50,29 @@ export function UserMenu() {
             </span>
           </button>
 
-          {/* Dropdown menu */}
-          <div className="absolute right-0 mt-2 w-48 py-2 bg-[var(--background-secondary)] border border-[var(--border)] rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-            <Link
-              href="/decks"
-              className="block px-4 py-2 text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface)]"
-            >
-              My Decks
-            </Link>
-            <Link
-              href="/settings"
-              className="block px-4 py-2 text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface)]"
-            >
-              Settings
-            </Link>
-            <hr className="my-2 border-[var(--border)]" />
-            <button
-              onClick={handleSignOut}
-              className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[var(--surface)]"
-            >
-              Sign Out
-            </button>
+          {/* Dropdown menu - pt-2 creates hover bridge, inner div has actual styling */}
+          <div className="absolute right-0 top-full pt-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+            <div className="py-2 bg-[#1a1a2e] border border-[var(--border)] rounded-lg shadow-2xl">
+              <Link
+                href="/decks"
+                className="block px-4 py-2 text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] cursor-pointer"
+              >
+                My Decks
+              </Link>
+              <Link
+                href="/settings"
+                className="block px-4 py-2 text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] cursor-pointer"
+              >
+                Settings
+              </Link>
+              <hr className="my-2 border-[var(--border)]" />
+              <button
+                onClick={handleSignOut}
+                className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[var(--surface)] cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </div>
