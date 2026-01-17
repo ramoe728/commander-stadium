@@ -46,7 +46,7 @@ export function DeckBuilder({
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
 
   const cardCount = cards.reduce((sum, card) => sum + card.quantity, 0);
-  const isComplete = cardCount >= 100;
+  const isComplete = cardCount === 100;
   const deckLegality = validateDeckLegality(cards);
 
   /**
@@ -230,10 +230,35 @@ export function DeckBuilder({
                   Legal
                 </span>
               ) : (
-                <span className="text-sm text-red-400 flex items-center gap-1" title={deckLegality.illegalCards.map(c => `${c.cardName}: ${c.reason}`).join('\n')}>
-                  <WarningIcon className="w-4 h-4" />
-                  {deckLegality.illegalCards.length} violation{deckLegality.illegalCards.length !== 1 ? 's' : ''}
-                </span>
+                <div className="relative group">
+                  <span className="text-sm text-red-400 flex items-center gap-1 cursor-help">
+                    <WarningIcon className="w-4 h-4" />
+                    {deckLegality.deckErrors.length + deckLegality.illegalCards.length} issue{(deckLegality.deckErrors.length + deckLegality.illegalCards.length) !== 1 ? 's' : ''}
+                  </span>
+                  {/* Hover tooltip */}
+                  <div className="absolute left-0 top-full mt-2 w-72 p-3 bg-[var(--background-secondary)] border border-[var(--border)] rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                    <h4 className="text-xs font-semibold text-red-400 uppercase tracking-wide mb-2">
+                      Legality Issues
+                    </h4>
+                    <ul className="space-y-1.5">
+                      {deckLegality.deckErrors.map((error, i) => (
+                        <li key={`deck-${i}`} className="text-sm text-[var(--foreground)] flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          {error}
+                        </li>
+                      ))}
+                      {deckLegality.illegalCards.map((card) => (
+                        <li key={card.cardId} className="text-sm text-[var(--foreground)] flex items-start gap-2">
+                          <span className="text-red-400 mt-0.5">•</span>
+                          <span>
+                            <span className="font-medium">{card.cardName}</span>
+                            <span className="text-[var(--foreground-muted)]"> — {card.reason}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               )}
               {deckId && (
                 <span className="text-sm text-[var(--foreground-subtle)]">

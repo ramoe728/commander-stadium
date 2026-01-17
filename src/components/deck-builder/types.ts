@@ -120,6 +120,7 @@ export interface IllegalCard {
 export interface DeckLegalityResult {
   isLegal: boolean;
   illegalCards: IllegalCard[];
+  deckErrors: string[]; // Deck-level errors (e.g., wrong card count)
 }
 
 /**
@@ -137,15 +138,28 @@ function countCardsByName(cards: Card[]): Map<string, number> {
 
 /**
  * Validates deck legality for Commander format.
- * Checks for singleton rule violations (only 1 copy unless it's a basic land
- * or a card that explicitly allows multiple copies).
+ * Checks for:
+ * - Exactly 100 cards (including commander)
+ * - Singleton rule violations (only 1 copy unless it's a basic land
+ *   or a card that explicitly allows multiple copies)
  * 
  * Note: The singleton rule is based on card NAME, not ID. Two different
  * printings of the same card count as duplicates.
  */
 export function validateDeckLegality(cards: Card[]): DeckLegalityResult {
   const illegalCards: IllegalCard[] = [];
+  const deckErrors: string[] = [];
   const cardCounts = countCardsByName(cards);
+
+  // Check for exactly 100 cards
+  const totalCards = cards.reduce((sum, card) => sum + card.quantity, 0);
+  if (totalCards !== 100) {
+    deckErrors.push(
+      totalCards < 100
+        ? `Deck has ${totalCards} cards (need ${100 - totalCards} more)`
+        : `Deck has ${totalCards} cards (remove ${totalCards - 100})`
+    );
+  }
 
   // Track which card names we've already reported as illegal
   const reportedNames = new Set<string>();
@@ -175,8 +189,9 @@ export function validateDeckLegality(cards: Card[]): DeckLegalityResult {
   });
 
   return {
-    isLegal: illegalCards.length === 0,
+    isLegal: illegalCards.length === 0 && deckErrors.length === 0,
     illegalCards,
+    deckErrors,
   };
 }
 
