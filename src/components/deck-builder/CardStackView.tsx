@@ -281,6 +281,13 @@ function CardStackItem({
           }}
         />
 
+        {/* Commander crown badge - visible even in stacks, hidden on hover */}
+        {card.isCommander && !isHovered && (
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 p-1 bg-black/60 rounded-full backdrop-blur-sm">
+            <CrownIcon className="w-5 h-5 text-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.6)]" />
+          </div>
+        )}
+
         {/* Quantity badge */}
         {card.quantity > 1 && (
           <div className="absolute top-1 right-1 bg-[var(--accent-primary)] text-white text-xs font-bold px-1.5 py-0.5 rounded">
@@ -390,6 +397,18 @@ function MinusIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+    </svg>
+  );
+}
+
+function CrownIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
     </svg>
   );
 }

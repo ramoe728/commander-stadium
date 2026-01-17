@@ -40,10 +40,14 @@ export function CardTextView({
   onChangeArt,
   onSetCommander,
 }: CardTextViewProps) {
-  const [previewCard, setPreviewCard] = useState<Card | null>(
-    cards.length > 0 ? cards[0] : null
-  );
+  const [hoveredCard, setHoveredCard] = useState<Card | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+
+  // Find the commander card, or fall back to the first card
+  const commanderCard = cards.find((c) => c.isCommander) || (cards.length > 0 ? cards[0] : null);
+  
+  // Show hovered card if actively hovering, otherwise show commander
+  const previewCard = hoveredCard || commanderCard;
 
   const filteredCards = filterCards(cards, searchQuery);
   const groupedCards = groupCards(filteredCards, categoryMode);
@@ -136,7 +140,8 @@ export function CardTextView({
               cards={groupCards}
               allCards={cards}
               cardCount={groupCards.reduce((sum, c) => sum + c.quantity, 0)}
-              onCardHover={setPreviewCard}
+              onCardHover={setHoveredCard}
+              onCardLeave={() => setHoveredCard(null)}
               onContextMenu={handleContextMenu}
               onIncrement={handleIncrement}
               onDecrement={handleDecrement}
@@ -171,12 +176,13 @@ interface CardTextColumnProps {
   allCards: Card[]; // Full deck for cross-printing duplicate detection
   cardCount: number;
   onCardHover: (card: Card) => void;
+  onCardLeave: () => void;
   onContextMenu: (e: React.MouseEvent, card: Card) => void;
   onIncrement: (cardId: string) => void;
   onDecrement: (cardId: string) => void;
 }
 
-function CardTextColumn({ groupKey, categoryMode, cards, allCards, cardCount, onCardHover, onContextMenu, onIncrement, onDecrement }: CardTextColumnProps) {
+function CardTextColumn({ groupKey, categoryMode, cards, allCards, cardCount, onCardHover, onCardLeave, onContextMenu, onIncrement, onDecrement }: CardTextColumnProps) {
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
       {/* Column header */}
@@ -195,7 +201,8 @@ function CardTextColumn({ groupKey, categoryMode, cards, allCards, cardCount, on
             card={card}
             isIllegal={isCardIllegal(card, allCards)}
             showQuantityControls={card.allowsMultipleCopies || card.quantity > 1}
-            onHover={() => onCardHover(card)} 
+            onHover={() => onCardHover(card)}
+            onLeave={onCardLeave}
             onContextMenu={(e) => onContextMenu(e, card)}
             onIncrement={() => onIncrement(card.id)}
             onDecrement={() => onDecrement(card.id)}
@@ -211,12 +218,13 @@ interface CardTextItemProps {
   isIllegal: boolean;
   showQuantityControls: boolean;
   onHover: () => void;
+  onLeave: () => void;
   onContextMenu: (e: React.MouseEvent) => void;
   onIncrement: () => void;
   onDecrement: () => void;
 }
 
-function CardTextItem({ card, isIllegal, showQuantityControls, onHover, onContextMenu, onIncrement, onDecrement }: CardTextItemProps) {
+function CardTextItem({ card, isIllegal, showQuantityControls, onHover, onLeave, onContextMenu, onIncrement, onDecrement }: CardTextItemProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -230,7 +238,10 @@ function CardTextItem({ card, isIllegal, showQuantityControls, onHover, onContex
         setIsHovered(true);
         onHover();
       }}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        onLeave();
+      }}
       onContextMenu={onContextMenu}
     >
       {/* Quantity with +/- controls */}

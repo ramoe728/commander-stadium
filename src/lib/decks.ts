@@ -36,6 +36,7 @@ export interface DeckCardRecord {
   tags: string[];
   quantity: number;
   allows_multiple_copies: boolean;
+  is_commander?: boolean;
 }
 
 /**
@@ -60,6 +61,7 @@ function cardToRecord(card: Card): DeckCardRecord {
     tags: card.tags,
     quantity: card.quantity,
     allows_multiple_copies: card.allowsMultipleCopies,
+    is_commander: card.isCommander,
   };
 }
 
@@ -77,6 +79,7 @@ function recordToCard(record: DeckCardRecord): Card {
     tags: record.tags,
     quantity: record.quantity,
     allowsMultipleCopies: record.allows_multiple_copies,
+    isCommander: record.is_commander,
   };
 }
 
@@ -111,10 +114,10 @@ function extractColorIdentity(cards: Card[]): string[] {
 
 /**
  * Finds the commander card in a deck (if any).
- * Looks for cards with type "Commander" or in the command zone.
+ * Looks for cards marked as the commander.
  */
 function findCommander(cards: Card[]): Card | null {
-  return cards.find((card) => card.type === "Commander") || null;
+  return cards.find((card) => card.isCommander) || null;
 }
 
 /**
