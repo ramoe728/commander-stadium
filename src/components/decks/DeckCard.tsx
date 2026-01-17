@@ -5,8 +5,10 @@ import Link from "next/link";
 export interface Deck {
   id: string;
   name: string;
-  commanderName: string;
-  commanderImageUrl: string;
+  commanderName?: string;
+  commanderImageUrl?: string;
+  commander2Name?: string;
+  commander2ImageUrl?: string;
   colorIdentity: ("W" | "U" | "B" | "R" | "G")[];
   cardCount: number;
 }
@@ -27,13 +29,39 @@ export function DeckCard({ deck }: DeckCardProps) {
       href={`/decks/${deck.id}`}
       className="feature-card rounded-xl overflow-hidden group cursor-pointer block"
     >
-      {/* Commander image */}
+      {/* Commander image(s) */}
       <div className="relative h-48 overflow-hidden">
-        <img
-          src={deck.commanderImageUrl}
-          alt={deck.commanderName}
-          className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
-        />
+        {deck.commander2ImageUrl ? (
+          // Two commanders - split view (left half of first, right half of second)
+          <div className="w-full h-full flex">
+            <div className="w-1/2 h-full overflow-hidden relative">
+              <img
+                src={deck.commanderImageUrl}
+                alt={deck.commanderName}
+                className="absolute top-0 left-0 w-[200%] h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
+            <div className="w-1/2 h-full overflow-hidden relative">
+              <img
+                src={deck.commander2ImageUrl}
+                alt={deck.commander2Name}
+                className="absolute top-0 right-0 w-[200%] h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+            </div>
+          </div>
+        ) : deck.commanderImageUrl ? (
+          // Single commander
+          <img
+            src={deck.commanderImageUrl}
+            alt={deck.commanderName}
+            className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          // No commander - placeholder
+          <div className="w-full h-full bg-[var(--surface)] flex items-center justify-center">
+            <span className="text-[var(--foreground-muted)] text-sm">No Commander</span>
+          </div>
+        )}
         {/* Gradient overlay for readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface)] via-transparent to-transparent" />
         
@@ -67,9 +95,11 @@ export function DeckCard({ deck }: DeckCardProps) {
           {deck.name}
         </h3>
 
-        {/* Commander name */}
+        {/* Commander name(s) */}
         <p className="text-sm text-[var(--foreground-muted)] truncate">
-          {deck.commanderName}
+          {deck.commander2Name
+            ? `${deck.commanderName} & ${deck.commander2Name}`
+            : deck.commanderName || "No Commander"}
         </p>
       </div>
     </Link>

@@ -16,6 +16,8 @@ function deckRecordToDisplayDeck(record: DeckRecord): Deck {
     name: record.name,
     commanderName: record.commander_name || undefined,
     commanderImageUrl: record.commander_image_url || undefined,
+    commander2Name: record.commander2_name || undefined,
+    commander2ImageUrl: record.commander2_image_url || undefined,
     colorIdentity: record.color_identity as Deck["colorIdentity"],
     cardCount: record.card_count,
   };

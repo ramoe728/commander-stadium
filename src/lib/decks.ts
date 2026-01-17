@@ -15,6 +15,8 @@ export interface DeckRecord {
   name: string;
   commander_name: string | null;
   commander_image_url: string | null;
+  commander2_name: string | null;
+  commander2_image_url: string | null;
   color_identity: string[]; // Array of color codes: W, U, B, R, G
   cards: DeckCardRecord[];
   card_count: number;
@@ -113,11 +115,11 @@ function extractColorIdentity(cards: Card[]): string[] {
 }
 
 /**
- * Finds the commander card in a deck (if any).
- * Looks for cards marked as the commander.
+ * Finds all commander cards in a deck (up to 2).
+ * Returns an array of commanders.
  */
-function findCommander(cards: Card[]): Card | null {
-  return cards.find((card) => card.isCommander) || null;
+function findCommanders(cards: Card[]): Card[] {
+  return cards.filter((card) => card.isCommander).slice(0, 2);
 }
 
 /**
@@ -193,7 +195,7 @@ export async function createDeck(input: DeckInput): Promise<DeckRecord | null> {
     return null;
   }
 
-  const commander = findCommander(input.cards);
+  const commanders = findCommanders(input.cards);
   const colorIdentity = extractColorIdentity(input.cards);
   const cardRecords = input.cards.map(cardToRecord);
   const cardCount = input.cards.reduce((sum, c) => sum + c.quantity, 0);
@@ -203,8 +205,10 @@ export async function createDeck(input: DeckInput): Promise<DeckRecord | null> {
     .insert({
       user_id: user.id,
       name: input.name,
-      commander_name: commander?.name || null,
-      commander_image_url: commander?.imageUrl || null,
+      commander_name: commanders[0]?.name || null,
+      commander_image_url: commanders[0]?.imageUrl || null,
+      commander2_name: commanders[1]?.name || null,
+      commander2_image_url: commanders[1]?.imageUrl || null,
       color_identity: colorIdentity,
       cards: cardRecords,
       card_count: cardCount,
@@ -238,7 +242,7 @@ export async function updateDeck(
     return null;
   }
 
-  const commander = findCommander(input.cards);
+  const commanders = findCommanders(input.cards);
   const colorIdentity = extractColorIdentity(input.cards);
   const cardRecords = input.cards.map(cardToRecord);
   const cardCount = input.cards.reduce((sum, c) => sum + c.quantity, 0);
@@ -247,8 +251,10 @@ export async function updateDeck(
     .from("decks")
     .update({
       name: input.name,
-      commander_name: commander?.name || null,
-      commander_image_url: commander?.imageUrl || null,
+      commander_name: commanders[0]?.name || null,
+      commander_image_url: commanders[0]?.imageUrl || null,
+      commander2_name: commanders[1]?.name || null,
+      commander2_image_url: commanders[1]?.imageUrl || null,
       color_identity: colorIdentity,
       cards: cardRecords,
       card_count: cardCount,

@@ -42,12 +42,19 @@ export function CardTextView({
 }: CardTextViewProps) {
   const [hoveredCard, setHoveredCard] = useState<Card | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+  const [commanderOnTop, setCommanderOnTop] = useState<0 | 1>(0); // Which commander is on top (0 or 1)
 
-  // Find the commander card, or fall back to the first card
-  const commanderCard = cards.find((c) => c.isCommander) || (cards.length > 0 ? cards[0] : null);
+  // Find all commanders (up to 2)
+  const commanders = cards.filter((c) => c.isCommander);
+  const primaryCommander = commanders[commanderOnTop] || commanders[0] || null;
+  const secondaryCommander = commanders.length === 2 ? commanders[commanderOnTop === 0 ? 1 : 0] : null;
   
-  // Show hovered card if actively hovering, otherwise show commander
-  const previewCard = hoveredCard || commanderCard;
+  // Fall back to first card if no commander
+  const defaultCard = primaryCommander || (cards.length > 0 ? cards[0] : null);
+  
+  // Show hovered card if actively hovering, otherwise show commander/default
+  const previewCard = hoveredCard || defaultCard;
+  const isShowingCommanders = !hoveredCard && commanders.length > 0;
 
   const filteredCards = filterCards(cards, searchQuery);
   const groupedCards = groupCards(filteredCards, categoryMode);
@@ -113,12 +120,36 @@ export function CardTextView({
         <div className="hidden lg:block w-64 flex-shrink-0">
           <div className="sticky top-24">
             {previewCard ? (
-              <div className="rounded-xl overflow-hidden border border-[var(--border)] shadow-xl">
-                <img
-                  src={previewCard.imageUrl}
-                  alt={previewCard.name}
-                  className="w-full h-auto"
-                />
+              <div className="relative">
+                {/* Secondary commander peeking out behind */}
+                {isShowingCommanders && secondaryCommander && (
+                  <div className="absolute -top-6 -left-5 w-full rounded-xl overflow-hidden border border-[var(--border)] shadow-lg opacity-70">
+                    <img
+                      src={secondaryCommander.imageUrl}
+                      alt={secondaryCommander.name}
+                      className="w-full h-auto"
+                    />
+                  </div>
+                )}
+                {/* Main preview card */}
+                <div className="relative rounded-xl overflow-hidden border border-[var(--border)] shadow-xl">
+                  <img
+                    src={previewCard.imageUrl}
+                    alt={previewCard.name}
+                    className="w-full h-auto"
+                  />
+                </div>
+                {/* Swap button (only when showing 2 commanders) */}
+                {isShowingCommanders && secondaryCommander && (
+                  <button
+                    onClick={() => setCommanderOnTop((prev) => (prev === 0 ? 1 : 0))}
+                    className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-lg text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:border-[var(--accent-primary)] transition-colors cursor-pointer"
+                    title="Swap commanders"
+                  >
+                    <SwapIcon className="w-4 h-4" />
+                    Swap Commanders
+                  </button>
+                )}
               </div>
             ) : (
               <div className="aspect-[488/680] bg-[var(--surface)] rounded-xl border border-[var(--border)] flex items-center justify-center">
@@ -397,6 +428,14 @@ function CrownIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" viewBox="0 0 24 24">
       <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
+    </svg>
+  );
+}
+
+function SwapIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
     </svg>
   );
 }
