@@ -142,11 +142,12 @@ function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMe
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   // Calculate the height of the stack container
-  // Each card shows ~28px when stacked, plus the full height of the last card (~260px for MTG card ratio)
+  // Each card shows ~28px when stacked, plus the full height of the last card
+  // MTG card aspect ratio is 488:680, at w-48 (192px) height is ~267px
   const baseOffset = 28;
-  const cardHeight = 260;
+  const cardHeight = 267;
   const baseHeight = (cards.length - 1) * baseOffset + cardHeight;
-  // When hovering, we need extra space for the expanded card
+  // When hovering, we need extra space for the fully revealed card
   const expandedExtra = hoveredIndex !== null && hoveredIndex < cards.length - 1 ? cardHeight - baseOffset : 0;
   const containerHeight = baseHeight + expandedExtra;
 
@@ -220,15 +221,17 @@ function CardStackItem({
 }: CardStackItemProps) {
   // Calculate the vertical offset for this card
   // Cards stack with ~28px visible per card, but when a card above is hovered,
-  // cards below shift down to reveal the hovered card
+  // cards below shift down to reveal the full hovered card
   const baseOffset = 28;
-  const expandedOffset = 140; // Height of card when fully revealed
+  // MTG card aspect ratio is 488:680, at w-48 (192px) height is ~267px
+  const cardHeight = 267;
 
   let topOffset = index * baseOffset;
 
-  // If a card above this one is hovered, push this card down
+  // If a card above this one is hovered, push this card down by the full card height
+  // (minus the base offset since that space was already accounted for)
   if (hoveredIndex !== null && hoveredIndex < index) {
-    topOffset += expandedOffset - baseOffset;
+    topOffset += cardHeight - baseOffset;
   }
 
   return (
