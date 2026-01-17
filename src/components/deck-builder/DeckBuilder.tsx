@@ -124,6 +124,19 @@ export function DeckBuilder({
   }
 
   /**
+   * Sets a card as the deck's commander.
+   * Only one card can be the commander at a time.
+   */
+  function handleSetCommander(cardId: string) {
+    setCards((prevCards) =>
+      prevCards.map((c) => ({
+        ...c,
+        isCommander: c.id === cardId,
+      }))
+    );
+  }
+
+  /**
    * Handles bulk import of cards from a decklist.
    */
   function handleImportCards(importedCards: Card[]) {
@@ -338,6 +351,7 @@ export function DeckBuilder({
           onCardDecrement={handleDecrementCard}
           onCardRemove={handleRemoveCard}
           onChangeArt={handleChangeArt}
+          onSetCommander={handleSetCommander}
         />
       ) : (
         <CardTextView
@@ -349,6 +363,7 @@ export function DeckBuilder({
           onCardDecrement={handleDecrementCard}
           onCardRemove={handleRemoveCard}
           onChangeArt={handleChangeArt}
+          onSetCommander={handleSetCommander}
         />
       )}
 

@@ -8,8 +8,10 @@ interface CardContextMenuProps {
   cardId: string;
   cardName: string;
   quantity: number;
+  isCommander: boolean;
   onDelete: (cardId: string) => void;
   onChangeArt: (cardId: string, cardName: string) => void;
+  onSetCommander: (cardId: string) => void;
   onClose: () => void;
 }
 
@@ -23,8 +25,10 @@ export function CardContextMenu({
   cardId,
   cardName,
   quantity,
+  isCommander,
   onDelete,
   onChangeArt,
+  onSetCommander,
   onClose,
 }: CardContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -80,6 +84,11 @@ export function CardContextMenu({
     onClose();
   }
 
+  function handleSetCommander() {
+    onSetCommander(cardId);
+    onClose();
+  }
+
   return (
     <div
       ref={menuRef}
@@ -100,6 +109,18 @@ export function CardContextMenu({
 
       {/* Actions */}
       <div className="py-1">
+        <button
+          onClick={handleSetCommander}
+          disabled={isCommander}
+          className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors cursor-pointer ${
+            isCommander
+              ? "text-[var(--foreground-muted)] cursor-not-allowed"
+              : "text-[var(--foreground)] hover:bg-[var(--accent-primary)]/20 hover:text-[var(--accent-primary)]"
+          }`}
+        >
+          <CrownIcon className="w-4 h-4" />
+          {isCommander ? "Is Commander" : "Set Commander"}
+        </button>
         <button
           onClick={handleChangeArt}
           className="w-full px-3 py-2 text-left text-sm text-[var(--foreground)] hover:bg-[var(--accent-primary)]/20 hover:text-[var(--accent-primary)] flex items-center gap-2 transition-colors cursor-pointer"
@@ -155,3 +176,20 @@ function TrashIcon({ className }: { className?: string }) {
   );
 }
 
+function CrownIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.25 18.75l3-3 4.5 4.5 4.5-6 4.5 3 3-4.5V6.75l-3.75 3-3.75-4.5-4.5 6-4.5-3L2.25 12v6.75z"
+      />
+    </svg>
+  );
+}

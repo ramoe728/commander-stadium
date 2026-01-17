@@ -67,7 +67,7 @@ export function DeckBuilderToolbar({
         >
           <option value="mana-value">Mana Value</option>
           <option value="card-type">Card Type</option>
-          <option value="custom-tags">Custom Tags</option>
+          {/* <option value="categories">Categories</option> */}
         </select>
       </div>
 

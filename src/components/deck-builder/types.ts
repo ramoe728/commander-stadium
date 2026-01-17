@@ -12,6 +12,7 @@ export interface Card {
   tags: string[]; // User-defined tags like "card draw", "finisher"
   quantity: number;
   allowsMultipleCopies: boolean; // True for basic lands and cards like Relentless Rats
+  isCommander?: boolean; // True if this card is the deck's commander
 }
 
 export type CardType =
@@ -27,7 +28,7 @@ export type CardType =
 
 export type ViewMode = "stacks" | "text";
 
-export type CategoryMode = "mana-value" | "card-type" | "custom-tags";
+export type CategoryMode = "mana-value" | "card-type" | "categories";
 
 export type SortMode = "mana-value" | "name";
 
@@ -39,7 +40,7 @@ export interface DeckBuilderState {
   categoryMode: CategoryMode;
   sortMode: SortMode;
   searchQuery: string;
-  customTags: string[];
+  categories: string[];
 }
 
 /**
@@ -61,7 +62,7 @@ export function groupCards(
       case "card-type":
         keys = [card.type];
         break;
-      case "custom-tags":
+      case "categories":
         keys = card.tags.length > 0 ? card.tags : ["Uncategorized"];
         break;
       default:

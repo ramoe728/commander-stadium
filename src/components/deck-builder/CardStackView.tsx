@@ -10,6 +10,7 @@ interface ContextMenuState {
   cardId: string;
   cardName: string;
   quantity: number;
+  isCommander: boolean;
 }
 
 interface CardStackViewProps {
@@ -21,6 +22,7 @@ interface CardStackViewProps {
   onCardDecrement?: (cardId: string) => void;
   onCardRemove?: (cardId: string) => void;
   onChangeArt?: (cardId: string, cardName: string) => void;
+  onSetCommander?: (cardId: string) => void;
 }
 
 /**
@@ -37,6 +39,7 @@ export function CardStackView({
   onCardDecrement,
   onCardRemove,
   onChangeArt,
+  onSetCommander,
 }: CardStackViewProps) {
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
 
@@ -65,7 +68,13 @@ export function CardStackView({
       cardId: card.id,
       cardName: card.name,
       quantity: card.quantity,
+      isCommander: card.isCommander ?? false,
     });
+  }
+
+  function handleSetCommander(cardId: string) {
+    onSetCommander?.(cardId);
+    setContextMenu(null);
   }
 
   function handleIncrement(cardId: string) {
@@ -120,8 +129,10 @@ export function CardStackView({
           cardId={contextMenu.cardId}
           cardName={contextMenu.cardName}
           quantity={contextMenu.quantity}
+          isCommander={contextMenu.isCommander}
           onDelete={handleDelete}
           onChangeArt={handleChangeArt}
+          onSetCommander={handleSetCommander}
           onClose={() => setContextMenu(null)}
         />
       )}
