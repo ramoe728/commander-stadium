@@ -124,15 +124,14 @@ export function DeckBuilder({
   }
 
   /**
-   * Sets a card as the deck's commander.
-   * Only one card can be the commander at a time.
+   * Toggles a card's commander status.
+   * Up to two cards can be commanders at a time.
    */
   function handleSetCommander(cardId: string) {
     setCards((prevCards) =>
-      prevCards.map((c) => ({
-        ...c,
-        isCommander: c.id === cardId,
-      }))
+      prevCards.map((c) =>
+        c.id === cardId ? { ...c, isCommander: !c.isCommander } : c
+      )
     );
   }
 

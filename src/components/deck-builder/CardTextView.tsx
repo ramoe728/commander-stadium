@@ -159,6 +159,7 @@ export function CardTextView({
           cardName={contextMenu.cardName}
           quantity={contextMenu.quantity}
           isCommander={contextMenu.isCommander}
+          commanderCount={cards.filter((c) => c.isCommander).length}
           onDelete={handleDelete}
           onChangeArt={handleChangeArt}
           onSetCommander={handleSetCommander}
@@ -281,7 +282,14 @@ function CardTextItem({ card, isIllegal, showQuantityControls, onHover, onLeave,
       </div>
 
       {/* Card name */}
-      <span className={`flex-grow text-sm truncate ${isIllegal ? "text-red-400" : "text-[var(--foreground)]"}`}>
+      <span className={`flex-grow text-sm truncate ${
+        isIllegal 
+          ? "text-red-400" 
+          : card.isCommander 
+            ? "text-amber-400 font-medium" 
+            : "text-[var(--foreground)]"
+      }`}>
+        {card.isCommander && <CrownIcon className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />}
         {card.name}
       </span>
 
@@ -381,6 +389,14 @@ function MinusIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+    </svg>
+  );
+}
+
+function CrownIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
     </svg>
   );
 }

@@ -9,6 +9,7 @@ interface CardContextMenuProps {
   cardName: string;
   quantity: number;
   isCommander: boolean;
+  commanderCount: number;
   onDelete: (cardId: string) => void;
   onChangeArt: (cardId: string, cardName: string) => void;
   onSetCommander: (cardId: string) => void;
@@ -26,11 +27,14 @@ export function CardContextMenu({
   cardName,
   quantity,
   isCommander,
+  commanderCount,
   onDelete,
   onChangeArt,
   onSetCommander,
   onClose,
 }: CardContextMenuProps) {
+  // Can't set more commanders if we already have 2 (unless this card is already a commander)
+  const canSetCommander = isCommander || commanderCount < 2;
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
@@ -111,15 +115,18 @@ export function CardContextMenu({
       <div className="py-1">
         <button
           onClick={handleSetCommander}
-          disabled={isCommander}
-          className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors cursor-pointer ${
-            isCommander
-              ? "text-[var(--foreground-muted)] cursor-not-allowed"
-              : "text-[var(--foreground)] hover:bg-[var(--accent-primary)]/20 hover:text-[var(--accent-primary)]"
+          disabled={!canSetCommander}
+          className={`w-full px-3 py-2 text-left text-sm flex items-center gap-2 transition-colors ${
+            !canSetCommander
+              ? "text-[var(--foreground-muted)] cursor-not-allowed opacity-50"
+              : isCommander
+                ? "text-amber-400 hover:bg-amber-500/20 hover:text-amber-300 cursor-pointer"
+                : "text-[var(--foreground)] hover:bg-[var(--accent-primary)]/20 hover:text-[var(--accent-primary)] cursor-pointer"
           }`}
+          title={!canSetCommander ? "Maximum 2 commanders allowed" : undefined}
         >
           <CrownIcon className="w-4 h-4" />
-          {isCommander ? "Is Commander" : "Set Commander"}
+          {isCommander ? "Unset Commander" : "Set Commander"}
         </button>
         <button
           onClick={handleChangeArt}

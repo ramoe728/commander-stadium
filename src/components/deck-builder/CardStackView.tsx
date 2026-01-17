@@ -130,6 +130,7 @@ export function CardStackView({
           cardName={contextMenu.cardName}
           quantity={contextMenu.quantity}
           isCommander={contextMenu.isCommander}
+          commanderCount={cards.filter((c) => c.isCommander).length}
           onDelete={handleDelete}
           onChangeArt={handleChangeArt}
           onSetCommander={handleSetCommander}
