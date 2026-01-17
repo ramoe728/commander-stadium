@@ -112,7 +112,7 @@ export function CardContextMenu({
           className="w-full px-3 py-2 text-left text-sm text-red-400 hover:bg-red-500/20 hover:text-red-300 flex items-center gap-2 transition-colors cursor-pointer"
         >
           <TrashIcon className="w-4 h-4" />
-          Delete All
+          Delete
         </button>
       </div>
     </div>

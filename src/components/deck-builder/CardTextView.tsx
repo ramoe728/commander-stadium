@@ -125,6 +125,7 @@ export function CardTextView({
               groupKey={key}
               categoryMode={categoryMode}
               cards={groupCards}
+              allCards={cards}
               cardCount={groupCards.reduce((sum, c) => sum + c.quantity, 0)}
               onCardHover={setPreviewCard}
               onContextMenu={handleContextMenu}
@@ -156,6 +157,7 @@ interface CardTextColumnProps {
   groupKey: string;
   categoryMode: CategoryMode;
   cards: Card[];
+  allCards: Card[]; // Full deck for cross-printing duplicate detection
   cardCount: number;
   onCardHover: (card: Card) => void;
   onContextMenu: (e: React.MouseEvent, card: Card) => void;
@@ -163,7 +165,7 @@ interface CardTextColumnProps {
   onDecrement: (cardId: string) => void;
 }
 
-function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover, onContextMenu, onIncrement, onDecrement }: CardTextColumnProps) {
+function CardTextColumn({ groupKey, categoryMode, cards, allCards, cardCount, onCardHover, onContextMenu, onIncrement, onDecrement }: CardTextColumnProps) {
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl overflow-hidden">
       {/* Column header */}
@@ -180,7 +182,7 @@ function CardTextColumn({ groupKey, categoryMode, cards, cardCount, onCardHover,
           <CardTextItem 
             key={card.id} 
             card={card}
-            isIllegal={isCardIllegal(card)}
+            isIllegal={isCardIllegal(card, allCards)}
             showQuantityControls={card.allowsMultipleCopies || card.quantity > 1}
             onHover={() => onCardHover(card)} 
             onContextMenu={(e) => onContextMenu(e, card)}

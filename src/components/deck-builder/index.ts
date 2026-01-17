@@ -5,6 +5,7 @@ export { CardTextView } from "./CardTextView";
 export { CardSearch } from "./CardSearch";
 export { CardContextMenu } from "./CardContextMenu";
 export { ArtSelectorModal } from "./ArtSelectorModal";
+export { ImportDecklistModal } from "./ImportDecklistModal";
 export type {
   Card,
   CardType,

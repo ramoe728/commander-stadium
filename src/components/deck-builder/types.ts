@@ -123,12 +123,32 @@ export interface DeckLegalityResult {
 }
 
 /**
+ * Counts total copies of each card by NAME across all entries.
+ * This handles the case where the same card exists with different printings (IDs).
+ */
+function countCardsByName(cards: Card[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  cards.forEach((card) => {
+    const current = counts.get(card.name) || 0;
+    counts.set(card.name, current + card.quantity);
+  });
+  return counts;
+}
+
+/**
  * Validates deck legality for Commander format.
  * Checks for singleton rule violations (only 1 copy unless it's a basic land
  * or a card that explicitly allows multiple copies).
+ * 
+ * Note: The singleton rule is based on card NAME, not ID. Two different
+ * printings of the same card count as duplicates.
  */
 export function validateDeckLegality(cards: Card[]): DeckLegalityResult {
   const illegalCards: IllegalCard[] = [];
+  const cardCounts = countCardsByName(cards);
+
+  // Track which card names we've already reported as illegal
+  const reportedNames = new Set<string>();
 
   cards.forEach((card) => {
     // Cards allowing multiple copies are always legal regardless of quantity
@@ -136,13 +156,20 @@ export function validateDeckLegality(cards: Card[]): DeckLegalityResult {
       return;
     }
 
-    // Singleton rule: only 1 copy allowed
-    if (card.quantity > 1) {
+    // Skip if we've already reported this card name
+    if (reportedNames.has(card.name)) {
+      return;
+    }
+
+    // Singleton rule: only 1 copy allowed (by name, across all printings)
+    const totalCopies = cardCounts.get(card.name) || 0;
+    if (totalCopies > 1) {
+      reportedNames.add(card.name);
       illegalCards.push({
         cardId: card.id,
         cardName: card.name,
-        quantity: card.quantity,
-        reason: `Only 1 copy allowed (has ${card.quantity})`,
+        quantity: totalCopies,
+        reason: `Only 1 copy allowed (has ${totalCopies})`,
       });
     }
   });
@@ -155,7 +182,17 @@ export function validateDeckLegality(cards: Card[]): DeckLegalityResult {
 
 /**
  * Checks if a specific card is violating the singleton rule.
+ * Requires the full card list to check for duplicates by name across printings.
  */
-export function isCardIllegal(card: Card): boolean {
-  return !card.allowsMultipleCopies && card.quantity > 1;
+export function isCardIllegal(card: Card, allCards: Card[]): boolean {
+  if (card.allowsMultipleCopies) {
+    return false;
+  }
+
+  // Count total copies of this card NAME across all entries (different printings)
+  const totalCopies = allCards
+    .filter((c) => c.name === card.name)
+    .reduce((sum, c) => sum + c.quantity, 0);
+
+  return totalCopies > 1;
 }

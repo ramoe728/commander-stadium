@@ -19,7 +19,9 @@ export interface ScryfallCard {
     small: string;
     normal: string;
     large: string;
+    png: string; // PNG format with transparent corners (no white edges)
     art_crop: string;
+    border_crop: string;
   };
   card_faces?: Array<{
     name: string;
@@ -30,7 +32,9 @@ export interface ScryfallCard {
       small: string;
       normal: string;
       large: string;
+      png: string;
       art_crop: string;
+      border_crop: string;
     };
   }>;
 }
@@ -85,16 +89,30 @@ export async function fetchCardByName(name: string): Promise<ScryfallCard | null
 
 /**
  * Gets the image URL from a Scryfall card, handling double-faced cards.
+ * 
+ * Uses PNG format by default for clean corners (no white edges on older cards).
+ * Falls back to 'normal' format if PNG is not available.
  */
-export function getCardImageUrl(card: ScryfallCard, size: "small" | "normal" | "large" = "normal"): string {
+export function getCardImageUrl(
+  card: ScryfallCard, 
+  size: "small" | "normal" | "large" | "png" = "png"
+): string {
   // Single-faced cards have image_uris directly
   if (card.image_uris) {
-    return card.image_uris[size];
+    // Prefer PNG for clean corners, fall back to normal
+    if (size === "png" && card.image_uris.png) {
+      return card.image_uris.png;
+    }
+    return card.image_uris[size] || card.image_uris.normal;
   }
 
   // Double-faced cards have images in card_faces
   if (card.card_faces && card.card_faces[0]?.image_uris) {
-    return card.card_faces[0].image_uris[size];
+    const faceUris = card.card_faces[0].image_uris;
+    if (size === "png" && faceUris.png) {
+      return faceUris.png;
+    }
+    return faceUris[size] || faceUris.normal;
   }
 
   // Fallback placeholder
@@ -187,7 +205,7 @@ export async function fetchCardPrints(cardName: string): Promise<CardPrint[]> {
         set: (card as ScryfallCardWithSet).set?.toUpperCase() || "???",
         set_name: (card as ScryfallCardWithSet).set_name || "Unknown Set",
         collector_number: (card as ScryfallCardWithSet).collector_number || "",
-        imageUrl: getCardImageUrl(card, "normal"),
+        imageUrl: getCardImageUrl(card), // Uses PNG format by default for clean corners
         artist: (card as ScryfallCardWithSet).artist || "Unknown",
       }));
   } catch (error) {
@@ -204,4 +222,31 @@ interface ScryfallCardWithSet extends ScryfallCard {
   set_name?: string;
   collector_number?: string;
   artist?: string;
+}
+
+/**
+ * Fetches a card by set code and collector number.
+ * This allows importing specific printings/art versions.
+ * @param setCode - The set code (e.g., "MH3", "ELD")
+ * @param collectorNumber - The collector number in that set
+ */
+export async function fetchCardBySetAndNumber(
+  setCode: string,
+  collectorNumber: string
+): Promise<ScryfallCard | null> {
+  try {
+    const response = await fetch(
+      `${SCRYFALL_API_BASE}/cards/${setCode.toLowerCase()}/${collectorNumber}`
+    );
+
+    if (!response.ok) {
+      console.error("Scryfall set/number fetch error:", response.status);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to fetch card by set/number:", error);
+    return null;
+  }
 }

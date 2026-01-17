@@ -101,6 +101,7 @@ export function CardStackView({
             groupKey={key}
             categoryMode={categoryMode}
             cards={groupCards}
+            allCards={cards}
             cardCount={groupCards.reduce((sum, c) => sum + c.quantity, 0)}
             onContextMenu={handleContextMenu}
             onArtClick={handleChangeArt}
@@ -131,6 +132,7 @@ interface CardStackColumnProps {
   groupKey: string;
   categoryMode: CategoryMode;
   cards: Card[];
+  allCards: Card[]; // Full deck for cross-printing duplicate detection
   cardCount: number;
   onContextMenu: (e: React.MouseEvent, card: Card) => void;
   onArtClick: (cardId: string, cardName: string) => void;
@@ -138,7 +140,7 @@ interface CardStackColumnProps {
   onDecrement: (cardId: string) => void;
 }
 
-function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMenu, onArtClick, onIncrement, onDecrement }: CardStackColumnProps) {
+function CardStackColumn({ groupKey, categoryMode, cards, allCards, cardCount, onContextMenu, onArtClick, onIncrement, onDecrement }: CardStackColumnProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   // Calculate the height of the stack container
@@ -175,7 +177,7 @@ function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMe
             isHovered={hoveredIndex === index}
             hoveredIndex={hoveredIndex}
             totalCards={cards.length}
-            isIllegal={isCardIllegal(card)}
+            isIllegal={isCardIllegal(card, allCards)}
             showQuantityControls={card.allowsMultipleCopies || card.quantity > 1}
             onHover={() => setHoveredIndex(index)}
             onContextMenu={(e) => onContextMenu(e, card)}

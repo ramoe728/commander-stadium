@@ -8,6 +8,7 @@ import { CardStackView } from "./CardStackView";
 import { CardTextView } from "./CardTextView";
 import { CardSearch } from "./CardSearch";
 import { ArtSelectorModal } from "./ArtSelectorModal";
+import { ImportDecklistModal } from "./ImportDecklistModal";
 
 interface ArtSelectorState {
   cardId: string;
@@ -36,6 +37,7 @@ export function DeckBuilder({
   const [sortMode, setSortMode] = useState<SortMode>("mana-value");
   const [searchQuery, setSearchQuery] = useState("");
   const [artSelector, setArtSelector] = useState<ArtSelectorState | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const cardCount = cards.reduce((sum, card) => sum + card.quantity, 0);
   const isComplete = cardCount >= 100;
@@ -115,6 +117,32 @@ export function DeckBuilder({
     );
   }
 
+  /**
+   * Handles bulk import of cards from a decklist.
+   */
+  function handleImportCards(importedCards: Card[]) {
+    setCards((prevCards) => {
+      const newCards = [...prevCards];
+
+      for (const importedCard of importedCards) {
+        const existingIndex = newCards.findIndex((c) => c.id === importedCard.id);
+
+        if (existingIndex >= 0) {
+          // Increment quantity of existing card
+          newCards[existingIndex] = {
+            ...newCards[existingIndex],
+            quantity: newCards[existingIndex].quantity + importedCard.quantity,
+          };
+        } else {
+          // Add new card
+          newCards.push(importedCard);
+        }
+      }
+
+      return newCards;
+    });
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -167,7 +195,15 @@ export function DeckBuilder({
 
         <div className="flex items-center gap-3">
           <CardSearch onCardAdd={handleAddCard} />
-          <button className="btn-secondary px-4 py-2 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)]">
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="btn-secondary px-4 py-2 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)] flex items-center gap-2 cursor-pointer"
+            title="Import decklist"
+          >
+            <ImportIcon className="w-4 h-4" />
+            Import
+          </button>
+          <button className="btn-secondary px-4 py-2 rounded-lg text-[var(--foreground-muted)] hover:text-[var(--foreground)] cursor-pointer">
             <SaveIcon className="w-4 h-4 inline-block mr-2" />
             Save
           </button>
@@ -220,6 +256,14 @@ export function DeckBuilder({
           onClose={() => setArtSelector(null)}
         />
       )}
+
+      {/* Import decklist modal */}
+      {showImportModal && (
+        <ImportDecklistModal
+          onImport={handleImportCards}
+          onClose={() => setShowImportModal(false)}
+        />
+      )}
     </div>
   );
 }
@@ -260,6 +304,14 @@ function WarningIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+    </svg>
+  );
+}
+
+function ImportIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
     </svg>
   );
 }

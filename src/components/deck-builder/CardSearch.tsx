@@ -112,7 +112,7 @@ export function CardSearch({ onCardAdd }: CardSearchProps) {
       const newCard: Card = {
         id: scryfallCard.id,
         name: scryfallCard.name,
-        imageUrl: getCardImageUrl(scryfallCard, "normal"),
+        imageUrl: getCardImageUrl(scryfallCard), // Uses PNG format for clean corners
         manaValue: Math.floor(scryfallCard.cmc),
         manaCost: scryfallCard.mana_cost || "",
         type: parseCardType(scryfallCard.type_line) as CardType,
@@ -187,7 +187,7 @@ export function CardSearch({ onCardAdd }: CardSearchProps) {
           {previewCard && (
             <div className="w-48 flex-shrink-0 p-2 border-l border-[var(--border)] bg-[var(--surface)]">
               <img
-                src={getCardImageUrl(previewCard, "normal")}
+                src={getCardImageUrl(previewCard)}
                 alt={previewCard.name}
                 className="w-full h-auto rounded"
               />
