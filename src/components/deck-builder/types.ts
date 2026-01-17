@@ -8,6 +8,7 @@ export interface Card {
   imageUrl: string;
   manaValue: number;
   manaCost: string; // e.g., "{2}{W}{U}"
+  colorIdentity: string[]; // Array of colors: W, U, B, R, G (empty for colorless)
   type: CardType;
   tags: string[]; // User-defined tags like "card draw", "finisher"
   quantity: number;
@@ -138,11 +139,45 @@ function countCardsByName(cards: Card[]): Map<string, number> {
 }
 
 /**
+ * Gets the combined color identity of all commanders.
+ */
+function getCommanderColorIdentity(cards: Card[]): Set<string> {
+  const commanders = cards.filter((c) => c.isCommander);
+  const colorIdentity = new Set<string>();
+  
+  commanders.forEach((commander) => {
+    commander.colorIdentity.forEach((color) => colorIdentity.add(color));
+  });
+  
+  return colorIdentity;
+}
+
+/**
+ * Checks if a card's color identity is within the commander's color identity.
+ * Colorless cards (empty color identity) are always legal.
+ */
+function isColorIdentityLegal(cardColors: string[], commanderColors: Set<string>): boolean {
+  // Colorless cards are always legal
+  if (cardColors.length === 0) {
+    return true;
+  }
+  
+  // If no commanders set, we can't check color identity
+  if (commanderColors.size === 0) {
+    return true;
+  }
+  
+  // Check if all card colors are within commander's color identity
+  return cardColors.every((color) => commanderColors.has(color));
+}
+
+/**
  * Validates deck legality for Commander format.
  * Checks for:
  * - Exactly 100 cards (including commander)
  * - Singleton rule violations (only 1 copy unless it's a basic land
  *   or a card that explicitly allows multiple copies)
+ * - Color identity violations (cards must match commander's color identity)
  * 
  * Note: The singleton rule is based on card NAME, not ID. Two different
  * printings of the same card count as duplicates.
@@ -151,6 +186,7 @@ export function validateDeckLegality(cards: Card[]): DeckLegalityResult {
   const illegalCards: IllegalCard[] = [];
   const deckErrors: string[] = [];
   const cardCounts = countCardsByName(cards);
+  const commanderColorIdentity = getCommanderColorIdentity(cards);
 
   // Check for exactly 100 cards
   const totalCards = cards.reduce((sum, card) => sum + card.quantity, 0);
@@ -166,6 +202,25 @@ export function validateDeckLegality(cards: Card[]): DeckLegalityResult {
   const reportedNames = new Set<string>();
 
   cards.forEach((card) => {
+    // Skip commanders for these checks
+    if (card.isCommander) {
+      return;
+    }
+
+    // Check color identity violation
+    if (!isColorIdentityLegal(card.colorIdentity, commanderColorIdentity)) {
+      if (!reportedNames.has(card.name)) {
+        reportedNames.add(card.name);
+        illegalCards.push({
+          cardId: card.id,
+          cardName: card.name,
+          quantity: card.quantity,
+          reason: `Color identity outside commander's (has ${card.colorIdentity.join(", ") || "C"})`,
+        });
+      }
+      return; // Don't double-report for singleton
+    }
+
     // Cards allowing multiple copies are always legal regardless of quantity
     if (card.allowsMultipleCopies) {
       return;
@@ -197,10 +252,24 @@ export function validateDeckLegality(cards: Card[]): DeckLegalityResult {
 }
 
 /**
- * Checks if a specific card is violating the singleton rule.
- * Requires the full card list to check for duplicates by name across printings.
+ * Checks if a specific card is violating Commander rules.
+ * Checks for:
+ * - Singleton rule (by name across printings)
+ * - Color identity (must match commander's color identity)
  */
 export function isCardIllegal(card: Card, allCards: Card[]): boolean {
+  // Commanders are never marked as illegal themselves
+  if (card.isCommander) {
+    return false;
+  }
+
+  // Check color identity
+  const commanderColorIdentity = getCommanderColorIdentity(allCards);
+  if (!isColorIdentityLegal(card.colorIdentity, commanderColorIdentity)) {
+    return true;
+  }
+
+  // Cards allowing multiple copies skip singleton check
   if (card.allowsMultipleCopies) {
     return false;
   }

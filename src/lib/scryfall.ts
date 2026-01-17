@@ -15,6 +15,7 @@ export interface ScryfallCard {
   cmc: number; // Converted mana cost (mana value)
   type_line: string;
   oracle_text?: string; // Rules text - used to detect "any number of cards" abilities
+  color_identity: string[]; // Array of colors: W, U, B, R, G (empty for colorless)
   image_uris?: {
     small: string;
     normal: string;

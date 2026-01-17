@@ -102,6 +102,7 @@ export function ImportDecklistModal({ onImport, onClose }: ImportDecklistModalPr
       imageUrl: getCardImageUrl(scryfallCard), // Uses PNG format for clean corners
       manaValue: Math.floor(scryfallCard.cmc),
       manaCost: scryfallCard.mana_cost || "",
+      colorIdentity: scryfallCard.color_identity || [],
       type: parseCardType(scryfallCard.type_line) as CardType,
       tags: [],
       quantity,

@@ -34,6 +34,7 @@ export interface DeckCardRecord {
   image_url: string;
   mana_value: number;
   mana_cost: string;
+  color_identity: string[];
   type: string;
   tags: string[];
   quantity: number;
@@ -59,6 +60,7 @@ function cardToRecord(card: Card): DeckCardRecord {
     image_url: card.imageUrl,
     mana_value: card.manaValue,
     mana_cost: card.manaCost,
+    color_identity: card.colorIdentity,
     type: card.type,
     tags: card.tags,
     quantity: card.quantity,
@@ -77,6 +79,7 @@ function recordToCard(record: DeckCardRecord): Card {
     imageUrl: record.image_url,
     manaValue: record.mana_value,
     manaCost: record.mana_cost,
+    colorIdentity: record.color_identity || [],
     type: record.type as Card["type"],
     tags: record.tags,
     quantity: record.quantity,

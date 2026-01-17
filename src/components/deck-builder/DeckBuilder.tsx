@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Card, ViewMode, CategoryMode, SortMode, validateDeckLegality } from "./types";
 import { DeckBuilderToolbar } from "./DeckBuilderToolbar";
@@ -10,6 +9,7 @@ import { CardTextView } from "./CardTextView";
 import { CardSearch } from "./CardSearch";
 import { ArtSelectorModal } from "./ArtSelectorModal";
 import { ImportDecklistModal } from "./ImportDecklistModal";
+import { UnsavedChangesModal } from "./UnsavedChangesModal";
 import { createDeck, updateDeck } from "@/lib/decks";
 
 interface ArtSelectorState {
@@ -44,6 +44,36 @@ export function DeckBuilder({
   const [showImportModal, setShowImportModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saved" | "error">("idle");
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+
+  // Track the last saved state to detect unsaved changes
+  const lastSavedState = useRef({ deckName: initialDeckName, cards: initialCards });
+
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = useCallback(() => {
+    if (deckName !== lastSavedState.current.deckName) return true;
+    if (cards.length !== lastSavedState.current.cards.length) return true;
+    
+    // Deep compare cards (simplified - just check IDs, quantities, and commander status)
+    const currentIds = cards.map(c => `${c.id}:${c.quantity}:${c.isCommander}`).sort().join(",");
+    const savedIds = lastSavedState.current.cards.map(c => `${c.id}:${c.quantity}:${c.isCommander}`).sort().join(",");
+    return currentIds !== savedIds;
+  }, [deckName, cards]);
+
+  // Warn before browser close/refresh if there are unsaved changes
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (hasUnsavedChanges()) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   const cardCount = cards.reduce((sum, card) => sum + card.quantity, 0);
   const isComplete = cardCount === 100;
@@ -193,6 +223,8 @@ export function DeckBuilder({
 
       if (result) {
         setSaveStatus("saved");
+        // Update last saved state to current state
+        lastSavedState.current = { deckName: deckName || "Untitled Deck", cards: [...cards] };
         // Reset status after 3 seconds
         setTimeout(() => setSaveStatus("idle"), 3000);
       } else {
@@ -206,18 +238,51 @@ export function DeckBuilder({
     }
   }
 
+  /**
+   * Handles navigation with unsaved changes check.
+   */
+  function handleNavigate(path: string) {
+    if (hasUnsavedChanges()) {
+      setPendingNavigation(path);
+      setShowUnsavedModal(true);
+    } else {
+      router.push(path);
+    }
+  }
+
+  /**
+   * Confirms discarding changes and navigates away.
+   */
+  function handleDiscardChanges() {
+    setShowUnsavedModal(false);
+    if (pendingNavigation) {
+      router.push(pendingNavigation);
+    }
+  }
+
+  /**
+   * Saves changes and then navigates away.
+   */
+  async function handleSaveAndNavigate() {
+    await handleSave();
+    setShowUnsavedModal(false);
+    if (pendingNavigation) {
+      router.push(pendingNavigation);
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Link
-            href="/decks"
-            className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent-primary)] transition-colors"
+          <button
+            onClick={() => handleNavigate("/decks")}
+            className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent-primary)] transition-colors cursor-pointer"
             title="Back to decks"
           >
             <BackIcon className="w-5 h-5 text-[var(--foreground-muted)]" />
-          </Link>
+          </button>
 
           <div>
             <input
@@ -381,6 +446,16 @@ export function DeckBuilder({
         <ImportDecklistModal
           onImport={handleImportCards}
           onClose={() => setShowImportModal(false)}
+        />
+      )}
+
+      {/* Unsaved changes warning modal */}
+      {showUnsavedModal && (
+        <UnsavedChangesModal
+          onSave={handleSaveAndNavigate}
+          onDiscard={handleDiscardChanges}
+          onCancel={() => setShowUnsavedModal(false)}
+          isSaving={isSaving}
         />
       )}
     </div>
