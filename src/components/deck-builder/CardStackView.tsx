@@ -161,10 +161,11 @@ function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMe
         </span>
       </div>
 
-      {/* Card stack */}
+      {/* Card stack - onMouseLeave on container resets hover, not on individual cards */}
       <div 
         className="relative transition-all duration-200"
         style={{ height: `${containerHeight}px` }}
+        onMouseLeave={() => setHoveredIndex(null)}
       >
         {cards.map((card, index) => (
           <CardStackItem
@@ -177,7 +178,6 @@ function CardStackColumn({ groupKey, categoryMode, cards, cardCount, onContextMe
             isIllegal={isCardIllegal(card)}
             showQuantityControls={card.allowsMultipleCopies || card.quantity > 1}
             onHover={() => setHoveredIndex(index)}
-            onLeave={() => setHoveredIndex(null)}
             onContextMenu={(e) => onContextMenu(e, card)}
             onArtClick={() => onArtClick(card.id, card.name)}
             onIncrement={() => onIncrement(card.id)}
@@ -198,7 +198,6 @@ interface CardStackItemProps {
   isIllegal: boolean;
   showQuantityControls: boolean;
   onHover: () => void;
-  onLeave: () => void;
   onContextMenu: (e: React.MouseEvent) => void;
   onArtClick: () => void;
   onIncrement: () => void;
@@ -213,7 +212,6 @@ function CardStackItem({
   isIllegal,
   showQuantityControls,
   onHover,
-  onLeave,
   onContextMenu,
   onArtClick,
   onIncrement,
@@ -239,7 +237,6 @@ function CardStackItem({
       className="absolute w-full transition-all duration-200 ease-out cursor-pointer"
       style={{ top: `${topOffset}px`, zIndex: isHovered ? 100 : index }}
       onMouseEnter={onHover}
-      onMouseLeave={onLeave}
       onContextMenu={onContextMenu}
     >
       <div
