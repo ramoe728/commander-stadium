@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cinzel, Crimson_Text } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/components/providers";
 
 // Cinzel for headings - elegant, fantasy-inspired serif
 const cinzel = Cinzel({
@@ -46,7 +47,7 @@ export default function RootLayout({
       <body
         className={`${cinzel.variable} ${crimsonText.variable} antialiased`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -74,14 +74,14 @@ export default function LobbyPage({ params }: LobbyPageProps) {
         displayName: user.email?.split("@")[0] || "Player",
       });
 
-      if (result) {
+      if (result.success) {
         // Refresh lobby data
         const updatedLobby = await getLobby(lobbyId);
         if (updatedLobby) {
           setLobby(updatedLobby);
         }
       } else {
-        setError("Failed to join lobby");
+        setError(result.error || "Failed to join lobby");
       }
       setJoining(false);
     }

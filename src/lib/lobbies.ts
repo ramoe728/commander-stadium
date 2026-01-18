@@ -59,15 +59,65 @@ export interface JoinLobbyInput {
 // ============================================
 
 /**
+ * Gets the user's current active lobby (if any).
+ * Users can only be in one lobby at a time.
+ */
+export async function getUserCurrentLobby(): Promise<LobbyWithPlayers | null> {
+  const supabase = createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return null;
+  }
+
+  // Find any lobby_players record for this user in an active lobby
+  const { data: playerRecord, error: playerError } = await supabase
+    .from("lobby_players")
+    .select("lobby_id")
+    .eq("user_id", user.id)
+    .limit(1)
+    .maybeSingle();
+
+  if (playerError || !playerRecord) {
+    return null;
+  }
+
+  // Check if that lobby is still active (waiting or in_game)
+  const lobby = await getLobby(playerRecord.lobby_id);
+  if (!lobby || (lobby.status !== "waiting" && lobby.status !== "in_game")) {
+    return null;
+  }
+
+  return lobby;
+}
+
+/**
+ * Result type for lobby operations that may fail with a specific reason.
+ */
+export interface LobbyOperationResult<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+/**
  * Creates a new lobby and adds the creator as host.
  */
-export async function createLobby(input: CreateLobbyInput): Promise<LobbyRecord | null> {
+export async function createLobby(input: CreateLobbyInput): Promise<LobbyOperationResult<LobbyRecord>> {
   const supabase = createClient();
   
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    console.error("User not authenticated");
-    return null;
+    return { success: false, error: "User not authenticated" };
+  }
+
+  // Check if user is already in a lobby
+  const currentLobby = await getUserCurrentLobby();
+  if (currentLobby) {
+    return { 
+      success: false, 
+      error: `You are already in a lobby: "${currentLobby.name}". Leave it first to create a new one.` 
+    };
   }
 
   // Create the lobby
@@ -86,7 +136,7 @@ export async function createLobby(input: CreateLobbyInput): Promise<LobbyRecord 
 
   if (lobbyError || !lobby) {
     console.error("Error creating lobby:", lobbyError);
-    return null;
+    return { success: false, error: "Failed to create lobby" };
   }
 
   // Add the creator as the host in slot 1
@@ -105,10 +155,10 @@ export async function createLobby(input: CreateLobbyInput): Promise<LobbyRecord 
     console.error("Error adding host to lobby:", playerError);
     // Clean up the lobby
     await supabase.from("lobbies").delete().eq("id", lobby.id);
-    return null;
+    return { success: false, error: "Failed to join lobby as host" };
   }
 
-  return lobby;
+  return { success: true, data: lobby };
 }
 
 /**
@@ -190,37 +240,43 @@ export async function getWaitingLobbies(): Promise<LobbyWithPlayers[]> {
 /**
  * Joins a lobby in the next available slot.
  */
-export async function joinLobby(input: JoinLobbyInput): Promise<LobbyPlayerRecord | null> {
+export async function joinLobby(input: JoinLobbyInput): Promise<LobbyOperationResult<LobbyPlayerRecord>> {
   const supabase = createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    console.error("User not authenticated");
-    return null;
+    return { success: false, error: "User not authenticated" };
   }
 
   // Get the lobby to check status and find next available slot
   const lobby = await getLobby(input.lobbyId);
   if (!lobby) {
-    console.error("Lobby not found");
-    return null;
+    return { success: false, error: "Lobby not found" };
   }
 
   if (lobby.status !== "waiting") {
-    console.error("Lobby is not accepting players");
-    return null;
+    return { success: false, error: "Lobby is not accepting players" };
   }
 
   // Check password if required
   if (lobby.password_hash && lobby.password_hash !== input.password) {
-    console.error("Invalid password");
-    return null;
+    return { success: false, error: "Invalid password" };
   }
 
-  // Check if already in lobby
+  // Check if already in this lobby
   if (lobby.players.some((p) => p.user_id === user.id)) {
-    console.error("Already in this lobby");
-    return null;
+    // Already in this lobby - that's fine, just return success
+    const existingPlayer = lobby.players.find((p) => p.user_id === user.id)!;
+    return { success: true, data: existingPlayer };
+  }
+
+  // Check if user is in a different lobby
+  const currentLobby = await getUserCurrentLobby();
+  if (currentLobby && currentLobby.id !== input.lobbyId) {
+    return { 
+      success: false, 
+      error: `You are already in a lobby: "${currentLobby.name}". Leave it first to join another.` 
+    };
   }
 
   // Find next available slot
@@ -234,8 +290,7 @@ export async function joinLobby(input: JoinLobbyInput): Promise<LobbyPlayerRecor
   }
 
   if (takenSlots.size >= lobby.max_players) {
-    console.error("Lobby is full");
-    return null;
+    return { success: false, error: "Lobby is full" };
   }
 
   // Join the lobby
@@ -255,10 +310,10 @@ export async function joinLobby(input: JoinLobbyInput): Promise<LobbyPlayerRecor
 
   if (error) {
     console.error("Error joining lobby:", error);
-    return null;
+    return { success: false, error: "Failed to join lobby" };
   }
 
-  return player;
+  return { success: true, data: player };
 }
 
 /**

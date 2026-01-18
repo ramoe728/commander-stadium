@@ -47,16 +47,16 @@ export function CreateGameModal({ onGameCreated, onClose }: CreateGameModalProps
     setIsCreating(true);
     setError(null);
 
-    const lobby = await createLobby({
+    const result = await createLobby({
       name: name.trim(),
       rules: rules.trim() || undefined,
       password: isPrivate ? password : undefined,
     });
 
-    if (lobby) {
-      onGameCreated(lobby.id);
+    if (result.success && result.data) {
+      onGameCreated(result.data.id);
     } else {
-      setError("Failed to create game. Please try again.");
+      setError(result.error || "Failed to create game. Please try again.");
       setIsCreating(false);
     }
   }
