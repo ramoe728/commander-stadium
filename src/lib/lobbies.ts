@@ -27,6 +27,7 @@ export interface LobbyPlayerRecord {
   user_id: string;
   display_name: string;
   avatar_color: string;
+  avatar_url: string | null;
   deck_id: string | null;
   deck_name: string | null;
   commander_name: string | null;
@@ -140,7 +141,7 @@ export async function createLobby(input: CreateLobbyInput): Promise<LobbyOperati
     return { success: false, error: "Failed to create lobby" };
   }
 
-  // Get user's profile for display name
+  // Get user's profile for display name and avatar
   const profile = await getCurrentProfile();
   const displayName = profile?.display_name || profile?.username || user.email?.split("@")[0] || "Host";
 
@@ -152,6 +153,7 @@ export async function createLobby(input: CreateLobbyInput): Promise<LobbyOperati
       user_id: user.id,
       display_name: displayName,
       avatar_color: profile?.avatar_color || "#7c3aed",
+      avatar_url: profile?.avatar_url || null,
       slot_position: 1,
       is_host: true,
       is_ready: false,
@@ -299,7 +301,7 @@ export async function joinLobby(input: JoinLobbyInput): Promise<LobbyOperationRe
     return { success: false, error: "Lobby is full" };
   }
 
-  // Get user's profile for display name
+  // Get user's profile for display name and avatar
   const profile = await getCurrentProfile();
   const displayName = profile?.display_name || profile?.username || input.displayName;
 
@@ -311,6 +313,7 @@ export async function joinLobby(input: JoinLobbyInput): Promise<LobbyOperationRe
       user_id: user.id,
       display_name: displayName,
       avatar_color: profile?.avatar_color || input.avatarColor || "#7c3aed",
+      avatar_url: profile?.avatar_url || null,
       slot_position: nextSlot,
       is_host: false,
       is_ready: false,

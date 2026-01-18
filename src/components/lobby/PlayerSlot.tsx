@@ -72,12 +72,20 @@ export function PlayerSlot({ slot, player, isCurrentUser, onKickPlayer }: Player
       <div className="p-4">
         <div className="flex items-center gap-3 mb-3">
           {/* Avatar */}
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
-            style={{ backgroundColor: player.avatar_color }}
-          >
-            {player.display_name[0].toUpperCase()}
-          </div>
+          {player.avatar_url ? (
+            <img
+              src={player.avatar_url}
+              alt={player.display_name}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+          ) : (
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+              style={{ backgroundColor: player.avatar_color }}
+            >
+              {player.display_name[0].toUpperCase()}
+            </div>
+          )}
           
           {/* Name */}
           <div className="flex-grow min-w-0">
