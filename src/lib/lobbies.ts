@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { getCurrentProfile } from "@/lib/profiles";
 
 // ============================================
 // Types
@@ -139,13 +140,18 @@ export async function createLobby(input: CreateLobbyInput): Promise<LobbyOperati
     return { success: false, error: "Failed to create lobby" };
   }
 
+  // Get user's profile for display name
+  const profile = await getCurrentProfile();
+  const displayName = profile?.display_name || profile?.username || user.email?.split("@")[0] || "Host";
+
   // Add the creator as the host in slot 1
   const { error: playerError } = await supabase
     .from("lobby_players")
     .insert({
       lobby_id: lobby.id,
       user_id: user.id,
-      display_name: user.email?.split("@")[0] || "Host",
+      display_name: displayName,
+      avatar_color: profile?.avatar_color || "#7c3aed",
       slot_position: 1,
       is_host: true,
       is_ready: false,
@@ -293,14 +299,18 @@ export async function joinLobby(input: JoinLobbyInput): Promise<LobbyOperationRe
     return { success: false, error: "Lobby is full" };
   }
 
+  // Get user's profile for display name
+  const profile = await getCurrentProfile();
+  const displayName = profile?.display_name || profile?.username || input.displayName;
+
   // Join the lobby
   const { data: player, error } = await supabase
     .from("lobby_players")
     .insert({
       lobby_id: input.lobbyId,
       user_id: user.id,
-      display_name: input.displayName,
-      avatar_color: input.avatarColor || "#7c3aed",
+      display_name: displayName,
+      avatar_color: profile?.avatar_color || input.avatarColor || "#7c3aed",
       slot_position: nextSlot,
       is_host: false,
       is_ready: false,

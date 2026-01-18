@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks";
 import { createClient } from "@/lib/supabase/client";
+import { Profile, getCurrentProfile } from "@/lib/profiles";
 
 /**
  * User menu component that shows auth status.
@@ -12,10 +14,25 @@ import { createClient } from "@/lib/supabase/client";
 export function UserMenu() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  // Fetch profile when user changes
+  useEffect(() => {
+    async function loadProfile() {
+      if (user) {
+        const profileData = await getCurrentProfile();
+        setProfile(profileData);
+      } else {
+        setProfile(null);
+      }
+    }
+    loadProfile();
+  }, [user]);
 
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    setProfile(null);
     router.push("/");
     router.refresh();
   }
@@ -32,6 +49,9 @@ export function UserMenu() {
 
   // Authenticated user
   if (user) {
+    const displayName = profile?.display_name || profile?.username || user.email?.split("@")[0] || "User";
+    const avatarLetter = displayName[0].toUpperCase();
+
     return (
       <div className="flex items-center gap-4">
         <Link
@@ -42,11 +62,22 @@ export function UserMenu() {
         </Link>
         <div className="relative group">
           <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent-primary)] transition-colors cursor-pointer">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-xs text-white font-bold">
-              {user.email?.[0].toUpperCase()}
-            </div>
+            {profile?.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={displayName}
+                className="w-6 h-6 rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center text-xs text-white font-bold"
+                style={{ backgroundColor: profile?.avatar_color || "#7c3aed" }}
+              >
+                {avatarLetter}
+              </div>
+            )}
             <span className="text-sm text-[var(--foreground-muted)] max-w-[120px] truncate">
-              {user.email}
+              {displayName}
             </span>
           </button>
 
@@ -97,4 +128,3 @@ export function UserMenu() {
     </div>
   );
 }
-
