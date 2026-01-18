@@ -1,71 +1,21 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Navigation, Footer } from "@/components/layout";
 import {
   GamesList,
   FriendsList,
   GuestRestricted,
   CreateGameButton,
+  CreateGameModal,
   DecklistsButton,
   Game,
   Friend,
 } from "@/components/game-finder";
+import { getWaitingLobbies, LobbyWithPlayers } from "@/lib/lobbies";
 
-// Mock data for UI development - will be replaced with real data later
-const MOCK_PUBLIC_GAMES: Game[] = [
-  {
-    id: "1",
-    name: "Casual EDH Night",
-    hostName: "ManaWizard",
-    currentPlayers: 2,
-    maxPlayers: 4,
-    rules:
-      "Casual game, no infinite combos please.\nPower level 6-7.\nWe're here to have fun!",
-    hasPassword: false,
-  },
-  {
-    id: "2",
-    name: "cEDH Tournament Practice",
-    hostName: "SpikeMaster",
-    currentPlayers: 3,
-    maxPlayers: 4,
-    rules:
-      "Competitive EDH practice.\nAll legal strategies allowed.\nNo take-backs after priority passes.",
-    hasPassword: false,
-  },
-  {
-    id: "3",
-    name: "Beginner Friendly",
-    hostName: "NewPlayerHelper",
-    currentPlayers: 1,
-    maxPlayers: 4,
-    rules:
-      "New players welcome!\nWe'll help explain interactions.\nPrecons and budget decks encouraged.",
-    hasPassword: false,
-  },
-  {
-    id: "4",
-    name: "Private Group",
-    hostName: "SecretGamer",
-    currentPlayers: 4,
-    maxPlayers: 4,
-    rules: "Private game for friends.",
-    hasPassword: true,
-  },
-];
-
-const MOCK_FRIENDS_GAMES: Game[] = [
-  {
-    id: "5",
-    name: "Friday Night Magic",
-    hostName: "BestFriend42",
-    currentPlayers: 2,
-    maxPlayers: 4,
-    rules: "Our regular Friday game!\nBring your spiciest brews.",
-    hasPassword: true,
-  },
-];
-
+// Mock friends data - will be replaced when friends system is implemented
 const MOCK_FRIENDS: Friend[] = [
   {
     id: "1",
@@ -99,16 +49,59 @@ const MOCK_FRIENDS: Friend[] = [
   },
 ];
 
+/**
+ * Converts a LobbyWithPlayers to the Game interface used by UI components.
+ */
+function lobbyToGame(lobby: LobbyWithPlayers): Game {
+  // Find the host player to get their display name
+  const hostPlayer = lobby.players.find((p) => p.is_host);
+  
+  return {
+    id: lobby.id,
+    name: lobby.name,
+    hostName: hostPlayer?.display_name || "Unknown",
+    currentPlayers: lobby.players.length,
+    maxPlayers: lobby.max_players,
+    rules: lobby.rules || "No rules specified.",
+    hasPassword: !!lobby.password_hash,
+  };
+}
+
 export default function GameFinderPage() {
-  // Placeholder handlers - will implement functionality later
+  const router = useRouter();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [publicGames, setPublicGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch lobbies on mount and set up polling for updates
+  useEffect(() => {
+    async function fetchLobbies() {
+      const lobbies = await getWaitingLobbies();
+      setPublicGames(lobbies.map(lobbyToGame));
+      setLoading(false);
+    }
+
+    fetchLobbies();
+
+    // Poll for updates every 10 seconds
+    const interval = setInterval(fetchLobbies, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Navigate to lobby when joining a game
   const handleJoinGame = (gameId: string) => {
-    console.log("Joining game:", gameId);
-    // TODO: Navigate to game lobby
+    router.push(`/lobby/${gameId}`);
   };
 
+  // Open the create game modal
   const handleCreateGame = () => {
-    console.log("Creating game");
-    // TODO: Open create game modal
+    setShowCreateModal(true);
+  };
+
+  // Called when a game is successfully created
+  const handleGameCreated = (lobbyId: string) => {
+    setShowCreateModal(false);
+    router.push(`/lobby/${lobbyId}`);
   };
 
   const handleAddFriend = () => {
@@ -140,20 +133,21 @@ export default function GameFinderPage() {
             {/* Left column: Games */}
             <div className="flex-grow space-y-8">
               {/* Friends' Games - Restricted for guests */}
-              <GuestRestricted>
+              {/* TODO: Implement friends' games when friends system is ready */}
+              {/* <GuestRestricted>
                 <GamesList
                   title="Friends' Games"
-                  games={MOCK_FRIENDS_GAMES}
+                  games={[]}
                   emptyMessage="No friends are hosting games right now"
                   onJoinGame={handleJoinGame}
                 />
-              </GuestRestricted>
+              </GuestRestricted> */}
 
               {/* Public Games - Available to everyone */}
               <GamesList
                 title="Public Games"
-                games={MOCK_PUBLIC_GAMES}
-                emptyMessage="No public games available. Why not create one?"
+                games={publicGames}
+                emptyMessage={loading ? "Loading games..." : "No public games available. Why not create one?"}
                 onJoinGame={handleJoinGame}
               />
             </div>
@@ -181,7 +175,14 @@ export default function GameFinderPage() {
       </main>
 
       <Footer />
+
+      {/* Create game modal */}
+      {showCreateModal && (
+        <CreateGameModal
+          onGameCreated={handleGameCreated}
+          onClose={() => setShowCreateModal(false)}
+        />
+      )}
     </div>
   );
 }
-

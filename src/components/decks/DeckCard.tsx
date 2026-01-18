@@ -69,8 +69,8 @@ export function DeckCard({ deck }: DeckCardProps) {
         <div
           className={`absolute top-3 right-3 px-2.5 py-1 rounded-lg text-xs font-semibold backdrop-blur-sm ${
             isComplete
-              ? "bg-green-500/20 text-green-400 border border-green-500/30"
-              : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+              ? "bg-black/70 text-green-400 border border-green-500/50"
+              : "bg-black/70 text-amber-400 border border-amber-500/50"
           }`}
         >
           {deck.cardCount}/100
