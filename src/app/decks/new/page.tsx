@@ -2,7 +2,6 @@
 
 import { Navigation, Footer } from "@/components/layout";
 import { DeckBuilder } from "@/components/deck-builder";
-import { EMPTY_DECK_CARDS } from "@/components/deck-builder/mockCards";
 
 /**
  * New deck builder page.
@@ -21,7 +20,7 @@ export default function NewDeckPage() {
           <DeckBuilder
             deckId={null}
             initialDeckName="New Deck"
-            initialCards={EMPTY_DECK_CARDS}
+            initialCards={[]}
           />
         </div>
       </main>
