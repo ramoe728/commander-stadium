@@ -319,14 +319,14 @@ export default function GamePage() {
                 id: `${player.user_id}-${card.id}-${index}`,
                 cardId: card.id,
                 name: card.name,
-                imageUrl: card.imageUrl,
-                zone: card.isCommander ? "command" : "library",
+                imageUrl: card.image_url,
+                zone: card.is_commander ? "command" : "library",
                 ownerId: player.user_id,
                 controllerId: player.user_id,
                 tapped: false,
                 faceDown: true,
                 counters: {},
-                isCommander: card.isCommander || false,
+                isCommander: card.is_commander || false,
               }));
             }
           }
