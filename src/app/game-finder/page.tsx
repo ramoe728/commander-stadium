@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Navigation, Footer } from "@/components/layout";
 import {
@@ -14,18 +14,26 @@ import {
   Game,
 } from "@/components/game-finder";
 import { getWaitingLobbies, LobbyWithPlayers } from "@/lib/lobbies";
+import { getFriends } from "@/lib/friends";
+import { useAuth } from "@/hooks";
 
 /**
  * Converts a LobbyWithPlayers to the Game interface used by UI components.
+ * Includes the host's user ID for friend filtering.
  */
-function lobbyToGame(lobby: LobbyWithPlayers): Game {
-  // Find the host player to get their display name
+interface GameWithHostId extends Game {
+  hostId: string | null;
+}
+
+function lobbyToGameWithHostId(lobby: LobbyWithPlayers): GameWithHostId {
+  // Find the host player to get their display name and user ID
   const hostPlayer = lobby.players.find((p) => p.is_host);
   
   return {
     id: lobby.id,
     name: lobby.name,
     hostName: hostPlayer?.display_name || "Unknown",
+    hostId: hostPlayer?.user_id || null,
     currentPlayers: lobby.players.length,
     maxPlayers: lobby.max_players,
     rules: lobby.rules || "No rules specified.",
@@ -35,25 +43,54 @@ function lobbyToGame(lobby: LobbyWithPlayers): Game {
 
 export default function GameFinderPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAddFriendModal, setShowAddFriendModal] = useState(false);
+  const [friendsGames, setFriendsGames] = useState<Game[]>([]);
   const [publicGames, setPublicGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch lobbies on mount and set up polling for updates
-  useEffect(() => {
-    async function fetchLobbies() {
-      const lobbies = await getWaitingLobbies();
-      setPublicGames(lobbies.map(lobbyToGame));
-      setLoading(false);
+  // Fetch lobbies and separate friends' games from public games
+  const fetchLobbies = useCallback(async () => {
+    const lobbies = await getWaitingLobbies();
+    const gamesWithHostId = lobbies.map(lobbyToGameWithHostId);
+
+    // If user is logged in, fetch friends and filter games
+    if (user) {
+      const friends = await getFriends();
+      const friendIds = new Set(friends.map((f) => f.id));
+
+      // Separate friends' games from public games
+      const friendGames: Game[] = [];
+      const otherGames: Game[] = [];
+
+      for (const game of gamesWithHostId) {
+        if (game.hostId && friendIds.has(game.hostId)) {
+          friendGames.push(game);
+        } else {
+          otherGames.push(game);
+        }
+      }
+
+      setFriendsGames(friendGames);
+      setPublicGames(otherGames);
+    } else {
+      // Not logged in - all games are public
+      setFriendsGames([]);
+      setPublicGames(gamesWithHostId);
     }
 
+    setLoading(false);
+  }, [user]);
+
+  // Fetch lobbies on mount and set up polling for updates
+  useEffect(() => {
     fetchLobbies();
 
     // Poll for updates every 10 seconds
     const interval = setInterval(fetchLobbies, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchLobbies]);
 
   // Navigate to lobby when joining a game
   const handleJoinGame = (gameId: string) => {
@@ -98,16 +135,15 @@ export default function GameFinderPage() {
           <div className="flex gap-6 flex-col lg:flex-row">
             {/* Left column: Games */}
             <div className="flex-grow space-y-8">
-              {/* Friends' Games - Restricted for guests */}
-              {/* TODO: Implement friends' games when friends system is ready */}
-              {/* <GuestRestricted>
+              {/* Friends' Games - Only shown when logged in and has friends' games */}
+              {user && (friendsGames.length > 0 || loading) && (
                 <GamesList
                   title="Friends' Games"
-                  games={[]}
-                  emptyMessage="No friends are hosting games right now"
+                  games={friendsGames}
+                  emptyMessage={loading ? "Loading..." : "No friends are hosting games right now"}
                   onJoinGame={handleJoinGame}
                 />
-              </GuestRestricted> */}
+              )}
 
               {/* Public Games - Available to everyone */}
               <GamesList

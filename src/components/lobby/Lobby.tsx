@@ -59,9 +59,18 @@ export function Lobby({ lobbyId, initialLobby }: LobbyProps) {
           if (updatedLobby) {
             setLobby(updatedLobby);
             
-            // If game started, redirect to game
+            // If game started, find the game ID and redirect
             if (updatedLobby.status === "in_game") {
-              router.push(`/game/${lobbyId}`);
+              // Query for the game that was created from this lobby
+              const { data: game } = await supabase
+                .from("games")
+                .select("id")
+                .eq("lobby_id", lobbyId)
+                .single();
+              
+              if (game) {
+                router.push(`/game/${game.id}`);
+              }
             }
             
             // If lobby was cancelled, redirect to game finder
@@ -127,11 +136,13 @@ export function Lobby({ lobbyId, initialLobby }: LobbyProps) {
   async function handleStartGame() {
     if (!canStartGame) return;
     setIsStarting(true);
-    const success = await startGame(lobbyId);
-    if (!success) {
+    const gameId = await startGame(lobbyId);
+    if (gameId) {
+      // Redirect to the game page
+      router.push(`/game/${gameId}`);
+    } else {
       setIsStarting(false);
     }
-    // If successful, the realtime subscription will redirect to the game
   }
 
   async function handleKickPlayer(playerId: string) {

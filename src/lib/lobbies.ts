@@ -417,37 +417,39 @@ export async function selectDeck(
 
 /**
  * Starts the game (host only).
+ * Returns the game ID if successful, null otherwise.
  */
-export async function startGame(lobbyId: string): Promise<boolean> {
+export async function startGame(lobbyId: string): Promise<string | null> {
   const supabase = createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return false;
+    return null;
   }
 
   // Verify user is host
   const lobby = await getLobby(lobbyId);
   if (!lobby || lobby.host_id !== user.id) {
     console.error("Only the host can start the game");
-    return false;
+    return null;
   }
 
   // Check all players are ready
   const allReady = lobby.players.every((p) => p.is_ready || p.is_host);
   if (!allReady) {
     console.error("Not all players are ready");
-    return false;
+    return null;
   }
 
-  // Update lobby status
-  const { error } = await supabase
-    .from("lobbies")
-    .update({
-      status: "in_game",
-      started_at: new Date().toISOString(),
-    })
-    .eq("id", lobbyId);
+  // Call the database function to create the game
+  const { data: gameId, error } = await supabase.rpc("start_game_from_lobby", {
+    p_lobby_id: lobbyId,
+  });
 
-  return !error;
+  if (error) {
+    console.error("Error starting game:", error);
+    return null;
+  }
+
+  return gameId as string;
 }
