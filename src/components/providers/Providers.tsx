@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
-import { LobbyProvider } from "@/hooks";
+import { LobbyProvider, useAppPresence } from "@/hooks";
 import { LobbyBar, LobbyBarSpacer } from "@/components/lobby";
 
 interface ProvidersProps {
@@ -9,12 +9,21 @@ interface ProvidersProps {
 }
 
 /**
+ * Component that sets up presence tracking for the app.
+ */
+function PresenceTracker() {
+  useAppPresence();
+  return null;
+}
+
+/**
  * Client-side providers wrapper for the app.
- * Includes lobby state management and the persistent lobby bar.
+ * Includes lobby state management, presence tracking, and the persistent lobby bar.
  */
 export function Providers({ children }: ProvidersProps) {
   return (
     <LobbyProvider>
+      <PresenceTracker />
       {children}
       <LobbyBarSpacer />
       <LobbyBar />

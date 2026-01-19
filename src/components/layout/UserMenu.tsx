@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks";
 import { createClient } from "@/lib/supabase/client";
 import { Profile, getCurrentProfile } from "@/lib/profiles";
+import { FriendRequestsInbox } from "./FriendRequestsInbox";
 
 /**
  * User menu component that shows auth status.
@@ -60,6 +61,10 @@ export function UserMenu() {
         >
           Find Games
         </Link>
+        
+        {/* Friend Requests Inbox */}
+        <FriendRequestsInbox />
+        
         <div className="relative group">
           <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] hover:border-[var(--accent-primary)] transition-colors cursor-pointer">
             {profile?.avatar_url ? (

@@ -8,4 +8,5 @@ export type { Friend } from "./FriendsList";
 export { CreateGameButton } from "./CreateGameButton";
 export { CreateGameModal } from "./CreateGameModal";
 export { DecklistsButton } from "./DecklistsButton";
+export { AddFriendModal } from "./AddFriendModal";
 

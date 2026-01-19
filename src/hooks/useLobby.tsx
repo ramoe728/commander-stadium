@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { LobbyWithPlayers, getUserCurrentLobby, leaveLobby as leaveLobbyApi } from "@/lib/lobbies";
+import { setInLobby, setOnline } from "@/lib/friends";
 import { useAuth } from "./useAuth";
 
 interface LobbyContextValue {
@@ -56,6 +57,21 @@ export function LobbyProvider({ children }: LobbyProviderProps) {
     const interval = setInterval(refreshLobby, 30000);
     return () => clearInterval(interval);
   }, [user, refreshLobby]);
+
+  // Update presence when lobby changes
+  useEffect(() => {
+    if (!user) return;
+
+    const updatePresence = async () => {
+      if (currentLobby) {
+        await setInLobby(currentLobby.id);
+      } else {
+        await setOnline();
+      }
+    };
+
+    updatePresence();
+  }, [user, currentLobby]);
 
   // Leave lobby function
   const leaveLobby = useCallback(async (): Promise<boolean> => {

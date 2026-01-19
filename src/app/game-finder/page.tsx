@@ -10,44 +10,10 @@ import {
   CreateGameButton,
   CreateGameModal,
   DecklistsButton,
+  AddFriendModal,
   Game,
-  Friend,
 } from "@/components/game-finder";
 import { getWaitingLobbies, LobbyWithPlayers } from "@/lib/lobbies";
-
-// Mock friends data - will be replaced when friends system is implemented
-const MOCK_FRIENDS: Friend[] = [
-  {
-    id: "1",
-    name: "BestFriend42",
-    status: "in-game",
-    avatarColor: "#7c3aed",
-  },
-  {
-    id: "2",
-    name: "CardShark",
-    status: "online",
-    avatarColor: "#06b6d4",
-  },
-  {
-    id: "3",
-    name: "MtgEnthusiast",
-    status: "online",
-    avatarColor: "#f59e0b",
-  },
-  {
-    id: "4",
-    name: "CasualCaster",
-    status: "offline",
-    avatarColor: "#10b981",
-  },
-  {
-    id: "5",
-    name: "ComboKing",
-    status: "offline",
-    avatarColor: "#ef4444",
-  },
-];
 
 /**
  * Converts a LobbyWithPlayers to the Game interface used by UI components.
@@ -70,6 +36,7 @@ function lobbyToGame(lobby: LobbyWithPlayers): Game {
 export default function GameFinderPage() {
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAddFriendModal, setShowAddFriendModal] = useState(false);
   const [publicGames, setPublicGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -105,8 +72,7 @@ export default function GameFinderPage() {
   };
 
   const handleAddFriend = () => {
-    console.log("Adding friend");
-    // TODO: Open add friend modal
+    setShowAddFriendModal(true);
   };
 
   return (
@@ -164,10 +130,7 @@ export default function GameFinderPage() {
 
               {/* Friends List - Restricted for guests */}
               <GuestRestricted className="h-[400px]">
-                <FriendsList
-                  friends={MOCK_FRIENDS}
-                  onAddFriend={handleAddFriend}
-                />
+                <FriendsList onAddFriend={handleAddFriend} />
               </GuestRestricted>
             </div>
           </div>
@@ -182,6 +145,11 @@ export default function GameFinderPage() {
           onGameCreated={handleGameCreated}
           onClose={() => setShowCreateModal(false)}
         />
+      )}
+
+      {/* Add friend modal */}
+      {showAddFriendModal && (
+        <AddFriendModal onClose={() => setShowAddFriendModal(false)} />
       )}
     </div>
   );
